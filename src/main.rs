@@ -1,15 +1,15 @@
-use iced::widget::{button, column, container, pick_list, row, scrollable, text, text_input};
-use iced::{Element, Length, Task, Theme};
+use iced::widget::{button, checkbox, column, container, row, scrollable, text, text_input};
+use iced::{Alignment, Element, Length, Task, Theme};
 use serde::Deserialize;
 use std::collections::{BTreeMap, HashSet};
 use std::fmt;
-use std::fs::File;
+use std::fs::{self, File};
 use std::io::BufReader;
 
 pub fn main() -> iced::Result {
     iced::application(DolphinDict::boot, DolphinDict::update, DolphinDict::view)
         .theme(DolphinDict::theme)
-        .title("DolphinDict - Immersive Gloss Viewer & Reader")
+        .title("DolphinDict - Immersive Reader")
         .run()
 }
 
@@ -34,9 +34,8 @@ enum Token {
     Marker { w: String },
 }
 
-type Dictionary = BTreeMap<String, Gloss>;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "lowercase")]
 enum Language {
     Latin,
     Greek,
@@ -51,58 +50,112 @@ impl fmt::Display for Language {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum ViewMode {
-    Glossary,
-    Reader,
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "lowercase")]
+enum WorkType {
+    Poem,
+    Dialogue,
+    Prose,
 }
 
-impl fmt::Display for ViewMode {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            ViewMode::Glossary => write!(f, "Glossary"),
-            ViewMode::Reader => write!(f, "Reader"),
-        }
-    }
+#[derive(Debug, Clone, Deserialize)]
+struct TextMetadata {
+    title: String,
+    author: String,
+    language: Language,
+    work_type: WorkType,
+    #[serde(skip)]
+    path: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+struct AnnotatedText {
+    metadata: TextMetadata,
+    tokens: Vec<Token>,
+}
+
+type Dictionary = BTreeMap<String, Gloss>;
+
+#[derive(Debug, Clone)]
+enum AppView {
+    Library,
+    Reader(TextMetadata),
+    Glossary(Language),
 }
 
 struct DolphinDict {
+    view: AppView,
     latin_dict: Dictionary,
     greek_dict: Dictionary,
     latin_core: HashSet<String>,
     greek_core: HashSet<String>,
-    current_language: Language,
-    view_mode: ViewMode,
+    available_texts: Vec<TextMetadata>,
+
+    // UI State
     search_query: String,
+    filter_latin: bool,
+    filter_greek: bool,
+
+    // Reader State
     selected_word: Option<String>,
     reader_tokens: Vec<Token>,
+    lemma_frequencies: BTreeMap<String, f64>,
 }
 
 #[derive(Debug, Clone)]
 enum Message {
     SearchChanged(String),
+    FilterLatinToggled(bool),
+    FilterGreekToggled(bool),
+    TextSelected(TextMetadata),
+    BackToLibrary,
+    OpenGlossary(Language),
     WordSelected(String),
-    LanguageSelected(Language),
-    ViewModeSelected(ViewMode),
 }
 
 impl Default for DolphinDict {
     fn default() -> Self {
-        let latin_dict = load_dictionary("dict.json");
-        let greek_dict = load_dictionary("greek_dict.json");
-        let latin_core = load_core_list("latin-core-list.csv");
-        let greek_core = load_core_list("greek-core-list.csv");
+        let latin_dict = load_dictionary("dictionaries/latin.json");
+        let greek_dict = load_dictionary("dictionaries/greek.json");
+        let latin_core = load_core_list("core_lists/latin-core-list.csv");
+        let greek_core = load_core_list("core_lists/greek-core-list.csv");
+
+        let mut available_texts = Vec::new();
+        if let Ok(entries) = fs::read_dir("texts") {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if path.extension().and_then(|s| s.to_str()) == Some("json") {
+                    if let Ok(file) = File::open(&path) {
+                        let reader = BufReader::new(file);
+                        // We only need to peek at the metadata
+                        if let Ok(data) = serde_json::from_reader::<_, serde_json::Value>(reader) {
+                            if let Some(meta_val) = data.get("metadata") {
+                                if let Ok(mut meta) =
+                                    serde_json::from_value::<TextMetadata>(meta_val.clone())
+                                {
+                                    meta.path = path.to_string_lossy().into_owned();
+                                    available_texts.push(meta);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         Self {
+            view: AppView::Library,
             latin_dict,
             greek_dict,
             latin_core,
             greek_core,
-            current_language: Language::Latin,
-            view_mode: ViewMode::Glossary,
+            available_texts,
             search_query: String::new(),
+            filter_latin: true,
+            filter_greek: true,
             selected_word: None,
             reader_tokens: Vec::new(),
+            lemma_frequencies: BTreeMap::new(),
         }
     }
 }
@@ -141,13 +194,40 @@ fn load_core_list(path: &str) -> HashSet<String> {
         .collect()
 }
 
-fn load_annotated_text(path: &str) -> Vec<Token> {
+fn load_annotated_text(path: &str) -> (TextMetadata, Vec<Token>, BTreeMap<String, f64>) {
     let file = match File::open(path) {
         Ok(f) => f,
-        Err(_) => return Vec::new(),
+        Err(_) => panic!("Failed to open text file: {}", path),
     };
     let reader = BufReader::new(file);
-    serde_json::from_reader(reader).unwrap_or_default()
+    let mut data: AnnotatedText =
+        serde_json::from_reader(reader).expect("Failed to parse annotated text");
+    data.metadata.path = path.to_string();
+
+    let tokens = data.tokens;
+    let mut lemma_counts: BTreeMap<String, usize> = BTreeMap::new();
+    let mut total_words = 0;
+
+    for token in &tokens {
+        if let Token::Word { w: _, l } = token {
+            *lemma_counts.entry(l.clone()).or_insert(0) += 1;
+            total_words += 1;
+        }
+    }
+
+    let frequencies: BTreeMap<String, f64> = if total_words > 0 {
+        lemma_counts
+            .into_iter()
+            .map(|(lemma, count)| {
+                let percentage = (count as f64 / total_words as f64) * 100.0;
+                (lemma, percentage)
+            })
+            .collect()
+    } else {
+        BTreeMap::new()
+    };
+
+    (data.metadata, tokens, frequencies)
 }
 
 impl DolphinDict {
@@ -160,27 +240,32 @@ impl DolphinDict {
             Message::SearchChanged(query) => {
                 self.search_query = query;
             }
+            Message::FilterLatinToggled(on) => {
+                self.filter_latin = on;
+            }
+            Message::FilterGreekToggled(on) => {
+                self.filter_greek = on;
+            }
+            Message::TextSelected(text_meta) => {
+                let (meta, tokens, frequencies) = load_annotated_text(&text_meta.path);
+                self.reader_tokens = tokens;
+                self.lemma_frequencies = frequencies;
+                self.view = AppView::Reader(meta);
+                self.selected_word = None;
+            }
+            Message::BackToLibrary => {
+                self.view = AppView::Library;
+                self.reader_tokens = Vec::new();
+                self.selected_word = None;
+                self.lemma_frequencies = BTreeMap::new();
+            }
+            Message::OpenGlossary(lang) => {
+                self.view = AppView::Glossary(lang);
+                self.selected_word = None;
+                self.search_query = String::new();
+            }
             Message::WordSelected(word) => {
                 self.selected_word = Some(word);
-            }
-            Message::LanguageSelected(language) => {
-                if self.current_language != language {
-                    self.current_language = language;
-                    self.selected_word = None;
-                    self.search_query = String::new();
-                    self.reader_tokens = Vec::new();
-                    self.view_mode = ViewMode::Glossary;
-                }
-            }
-            Message::ViewModeSelected(mode) => {
-                self.view_mode = mode;
-                if mode == ViewMode::Reader && self.reader_tokens.is_empty() {
-                    let path = match self.current_language {
-                        Language::Latin => "book1.annotated.json",
-                        Language::Greek => "Μένων.annotated.json",
-                    };
-                    self.reader_tokens = load_annotated_text(path);
-                }
             }
         }
         Task::none()
@@ -191,193 +276,370 @@ impl DolphinDict {
     }
 
     fn view(&self) -> Element<'_, Message> {
-        let dict = match self.current_language {
+        match &self.view {
+            AppView::Library => self.library_view(),
+            AppView::Reader(meta) => self.reader_view(meta),
+            AppView::Glossary(lang) => self.glossary_view(*lang),
+        }
+    }
+
+    fn library_view(&self) -> Element<'_, Message> {
+        let title = text("DolphinDict Library").size(40);
+
+        let search_input = text_input("Search texts...", &self.search_query)
+            .on_input(Message::SearchChanged)
+            .padding(10);
+
+        let filters = row![
+            checkbox(self.filter_latin)
+                .label("Latin")
+                .on_toggle(Message::FilterLatinToggled),
+            checkbox(self.filter_greek)
+                .label("Ancient Greek")
+                .on_toggle(Message::FilterGreekToggled),
+        ]
+        .spacing(20);
+
+        let mut text_list = column![].spacing(10).width(Length::Fill);
+
+        let filtered_texts = self.available_texts.iter().filter(|t| {
+            let matches_search = t
+                .title
+                .to_lowercase()
+                .contains(&self.search_query.to_lowercase())
+                || t.author
+                    .to_lowercase()
+                    .contains(&self.search_query.to_lowercase());
+            let matches_lang = match t.language {
+                Language::Latin => self.filter_latin,
+                Language::Greek => self.filter_greek,
+            };
+            matches_search && matches_lang
+        });
+
+        for text_meta in filtered_texts {
+            let item = button(
+                row![
+                    column![
+                        text(&text_meta.title).size(18),
+                        text(&text_meta.author)
+                            .size(14)
+                            .style(|_| iced::widget::text::Style {
+                                color: Some(iced::Color::from_rgb(0.7, 0.7, 0.7)),
+                            }),
+                    ]
+                    .width(Length::Fill),
+                    text(format!("{}", text_meta.language)).size(14),
+                ]
+                .padding(10)
+                .align_y(Alignment::Center),
+            )
+            .on_press(Message::TextSelected(text_meta.clone()))
+            .width(Length::Fill)
+            .style(button::secondary);
+
+            text_list = text_list.push(item);
+        }
+
+        let glossary_buttons = row![
+            button("Latin Glossary").on_press(Message::OpenGlossary(Language::Latin)),
+            button("Greek Glossary").on_press(Message::OpenGlossary(Language::Greek)),
+        ]
+        .spacing(20);
+
+        container(
+            column![
+                title,
+                search_input,
+                filters,
+                scrollable(text_list).height(Length::Fill),
+                glossary_buttons
+            ]
+            .spacing(20)
+            .max_width(800.0)
+            .align_x(Alignment::Center),
+        )
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .center_x(Length::Fill)
+        .padding(40)
+        .into()
+    }
+
+    fn reader_view<'a>(&'a self, meta: &'a TextMetadata) -> Element<'a, Message> {
+        let dict = match meta.language {
             Language::Latin => &self.latin_dict,
             Language::Greek => &self.greek_dict,
         };
-        
-        let core_list = match self.current_language {
+
+        let core_list = match meta.language {
             Language::Latin => &self.latin_core,
             Language::Greek => &self.greek_core,
         };
 
-        let lang_picker = pick_list(
-            &[Language::Latin, Language::Greek][..],
-            Some(self.current_language),
-            Message::LanguageSelected,
-        )
-        .width(Length::Fill)
-        .padding(5);
+        let back_btn = button("← Library").on_press(Message::BackToLibrary);
+        let header_text = column![
+            text(&meta.title).size(24),
+            text(&meta.author)
+                .size(16)
+                .style(|_| iced::widget::text::Style {
+                    color: Some(iced::Color::from_rgb(0.7, 0.7, 0.7)),
+                }),
+        ];
 
-        let view_picker = pick_list(
-            &[ViewMode::Glossary, ViewMode::Reader][..],
-            Some(self.view_mode),
-            Message::ViewModeSelected,
-        )
-        .width(Length::Fill)
-        .padding(5);
+        let header = row![back_btn, header_text]
+            .spacing(20)
+            .align_y(Alignment::Center);
 
-        let sidebar_top = column![lang_picker, view_picker].spacing(10);
+        let mut reader_col = column![].spacing(10).width(Length::Fill);
+        let mut current_row_tokens = Vec::new();
+        let mut line_number = 0;
 
-        let sidebar_content: Element<Message> = match self.view_mode {
-            ViewMode::Glossary => {
-                let search_input = text_input("Search words...", &self.search_query)
-                    .on_input(Message::SearchChanged)
-                    .padding(10);
+        for token in &self.reader_tokens {
+            match token {
+                Token::Word { w, l } => {
+                    let is_selected = self.selected_word.as_ref() == Some(l);
+                    let has_gloss = dict.contains_key(l);
 
-                let filtered_words = dict.keys().filter(|word| {
-                    word.to_lowercase()
-                        .contains(&self.search_query.to_lowercase())
-                });
+                    let word_btn = button(text(w))
+                        .on_press(Message::WordSelected(l.clone()))
+                        .padding(1)
+                        .style(if is_selected {
+                            button::primary
+                        } else if has_gloss {
+                            button::text
+                        } else {
+                            button::text
+                        });
 
-                let mut word_list = column![].spacing(5).width(Length::Fill);
-                for word in filtered_words {
-                    let is_selected = self.selected_word.as_ref() == Some(word);
+                    current_row_tokens.push(word_btn.into());
+                }
+                Token::Punctuation { w } => {
+                    current_row_tokens.push(text(w).into());
+                }
+                Token::Newline => {
+                    line_number += 1;
+                    let mut line_row = row![];
 
-                    word_list = word_list.push(
-                        button(text(word))
-                            .on_press(Message::WordSelected(word.clone()))
-                            .width(Length::Fill)
-                            .style(if is_selected {
-                                button::primary
-                            } else {
-                                button::secondary
-                            }),
+                    if meta.work_type == WorkType::Poem {
+                        let num_str = if line_number % 5 == 0 {
+                            format!("{}", line_number)
+                        } else {
+                            "".to_string()
+                        };
+                        line_row = line_row.push(
+                            container(text(num_str).size(12).style(|_| {
+                                iced::widget::text::Style {
+                                    color: Some(iced::Color::from_rgb(0.5, 0.5, 0.5)),
+                                }
+                            }))
+                            .width(Length::Fixed(30.0))
+                            .align_x(Alignment::End)
+                            .padding(5),
+                        );
+                    }
+
+                    line_row = line_row.push(
+                        row(std::mem::take(&mut current_row_tokens))
+                            .spacing(5)
+                            .wrap(),
+                    );
+                    reader_col = reader_col.push(line_row);
+                }
+                Token::Speaker { w } => {
+                    if !current_row_tokens.is_empty() {
+                        reader_col = reader_col.push(
+                            row(std::mem::take(&mut current_row_tokens))
+                                .spacing(5)
+                                .wrap(),
+                        );
+                    }
+                    reader_col = reader_col.push(text(w).size(22));
+                }
+                Token::Marker { w } => {
+                    current_row_tokens.push(
+                        text(w)
+                            .size(12)
+                            .style(|_| iced::widget::text::Style {
+                                color: Some(iced::Color::from_rgb(0.5, 0.5, 0.5)),
+                            })
+                            .into(),
                     );
                 }
-
-                column![search_input, scrollable(container(word_list).padding(5))]
-                    .spacing(10)
-                    .into()
             }
-            ViewMode::Reader => {
-                if let Some(selected) = &self.selected_word {
-                    if let Some(gloss) = dict.get(selected) {
-                        let examples_iter = gloss
-                            .examples
-                            .iter()
-                            .map(|ex| text(format!("• {}", ex)).into());
+        }
 
-                        let examples = column(examples_iter).spacing(10);
+        if !current_row_tokens.is_empty() {
+            reader_col = reader_col.push(row(current_row_tokens).spacing(5).wrap());
+        }
 
-                        scrollable(
-                            column![
-                                text(selected).size(30),
-                                text(&gloss.definition).size(16),
-                                text("Examples:").size(18),
-                                examples,
-                            ]
-                            .spacing(15),
-                        )
+        let main_reader = scrollable(container(reader_col).padding(20));
+
+        let sidebar: Element<Message> = if let Some(selected) = &self.selected_word {
+            let is_core = core_list.contains(&selected.to_lowercase());
+            let frequency = self.lemma_frequencies.get(selected).copied();
+            let frequency_str = frequency.map(|f| format!("{:.1}%", f)).unwrap_or_default();
+            let star = if is_core {
+                " ★".to_string()
+            } else {
+                String::new()
+            };
+
+            if let Some(gloss) = dict.get(selected) {
+                let examples_iter = gloss
+                    .examples
+                    .iter()
+                    .map(|ex| text(format!("• {}", ex)))
+                    .map(|t| t.into());
+
+                let freq_element: Element<Message> = if !frequency_str.is_empty() {
+                    text(frequency_str)
+                        .size(14)
+                        .style(|_: &Theme| iced::widget::text::Style {
+                            color: Some(iced::Color::from_rgb(0.6, 0.6, 0.6)),
+                        })
                         .into()
-                    } else {
-                        container(text(format!("No gloss found for: {}", selected)))
-                            .padding(10)
-                            .into()
-                    }
                 } else {
-                    container(text("Click a word to see its gloss")).padding(10).into()
-                }
+                    text("").into()
+                };
+
+                scrollable(
+                    column![
+                        text(format!("{}{}", selected, star)).size(30),
+                        text(&gloss.definition).size(16),
+                        freq_element,
+                        text("Examples:").size(18),
+                        column(examples_iter).spacing(10),
+                    ]
+                    .spacing(15),
+                )
+                .into()
+            } else if is_core {
+                let freq_element: Element<Message> = if !frequency_str.is_empty() {
+                    text(frequency_str)
+                        .size(14)
+                        .style(|_: &Theme| iced::widget::text::Style {
+                            color: Some(iced::Color::from_rgb(0.6, 0.6, 0.6)),
+                        })
+                        .into()
+                } else {
+                    text("").into()
+                };
+
+                scrollable(
+                    column![
+                        text(format!("{}{}", selected, star)).size(30),
+                        text("Core vocabulary").size(16),
+                        freq_element,
+                    ]
+                    .spacing(15),
+                )
+                .into()
+            } else {
+                let freq_element: Element<Message> = if !frequency_str.is_empty() {
+                    text(frequency_str)
+                        .size(14)
+                        .style(|_: &Theme| iced::widget::text::Style {
+                            color: Some(iced::Color::from_rgb(0.6, 0.6, 0.6)),
+                        })
+                        .into()
+                } else {
+                    text("").into()
+                };
+
+                scrollable(
+                    column![
+                        text(selected).size(30),
+                        text("No gloss available").size(16),
+                        freq_element,
+                    ]
+                    .spacing(15),
+                )
+                .into()
             }
+        } else {
+            container(text("Click a word to see its gloss"))
+                .padding(10)
+                .into()
         };
 
-        let sidebar = column![sidebar_top, sidebar_content]
+        column![
+            header,
+            row![
+                main_reader.width(Length::Fill),
+                container(sidebar).width(Length::Fixed(300.0)).padding(10)
+            ]
             .spacing(20)
-            .width(Length::Fixed(250.0));
+        ]
+        .padding(20)
+        .into()
+    }
 
-        let main_content: Element<Message> = match self.view_mode {
-            ViewMode::Glossary => {
-                if let Some(selected) = &self.selected_word {
-                    if let Some(gloss) = dict.get(selected) {
-                        let examples_iter = gloss
-                            .examples
-                            .iter()
-                            .map(|ex| text(format!("• {}", ex)).into());
-
-                        let examples = column(examples_iter).spacing(10);
-
-                        column![
-                            text(selected).size(40),
-                            text(&gloss.definition).size(20),
-                            text("Examples:").size(25),
-                            scrollable(examples),
-                        ]
-                        .spacing(20)
-                        .padding(20)
-                        .into()
-                    } else {
-                        column![text("Word not found")].padding(20).into()
-                    }
-                } else {
-                    column![text("Select a word to view its gloss")].padding(20).into()
-                }
-            }
-            ViewMode::Reader => {
-                if self.reader_tokens.is_empty() {
-                    container(text("Reader data not found. Run 'python main.py annotate' first."))
-                        .center_x(Length::Fill)
-                        .center_y(Length::Fill)
-                        .width(Length::Fill)
-                        .height(Length::Fill)
-                        .into()
-                } else {
-                    let mut reader_col = column![].spacing(10).width(Length::Fill);
-                    let mut current_row_tokens = Vec::new();
-
-                    for token in &self.reader_tokens {
-                        match token {
-                            Token::Word { w, l } => {
-                                let is_selected = self.selected_word.as_ref() == Some(l);
-                                let has_gloss = dict.contains_key(l);
-                                
-                                let word_btn = button(text(w))
-                                    .on_press(Message::WordSelected(l.clone()))
-                                    .padding(1)
-                                    .style(if is_selected {
-                                        button::primary
-                                    } else if has_gloss {
-                                        button::text // Bold/Highlighted via custom theme if possible, for now just text
-                                    } else {
-                                        button::text
-                                    });
-                                
-                                current_row_tokens.push(word_btn.into());
-                            }
-                            Token::Punctuation { w } => {
-                                current_row_tokens.push(text(w).into());
-                            }
-                            Token::Newline => {
-                                reader_col = reader_col.push(row(std::mem::take(&mut current_row_tokens)).spacing(0).wrap());
-                            }
-                            Token::Speaker { w } => {
-                                if !current_row_tokens.is_empty() {
-                                    reader_col = reader_col.push(row(std::mem::take(&mut current_row_tokens)).spacing(0).wrap());
-                                }
-                                reader_col = reader_col.push(text(w).size(22)); // Larger font for speakers
-                            }
-                            Token::Marker { w } => {
-                                current_row_tokens.push(
-                                    text(w).size(12).style(|_| iced::widget::text::Style {
-                                        color: Some(iced::Color::from_rgb(0.5, 0.5, 0.5)),
-                                    }).into()
-                                );
-                            }
-                        }
-                    }
-                    
-                    if !current_row_tokens.is_empty() {
-                        reader_col = reader_col.push(row(current_row_tokens).spacing(0).wrap());
-                    }
-
-                    scrollable(container(reader_col).padding(20)).into()
-                }
-            }
+    fn glossary_view(&self, lang: Language) -> Element<'_, Message> {
+        let dict = match lang {
+            Language::Latin => &self.latin_dict,
+            Language::Greek => &self.greek_dict,
         };
 
-        container(row![sidebar, main_content].spacing(20))
-            .width(Length::Fill)
-            .height(Length::Fill)
-            .padding(20)
-            .into()
+        let back_btn = button("← Library").on_press(Message::BackToLibrary);
+        let title = text(format!("{} Glossary", lang)).size(30);
+        let header = row![back_btn, title].spacing(20).align_y(Alignment::Center);
+
+        let search_input = text_input("Search words...", &self.search_query)
+            .on_input(Message::SearchChanged)
+            .padding(10);
+
+        let filtered_words = dict.keys().filter(|word| {
+            word.to_lowercase()
+                .contains(&self.search_query.to_lowercase())
+        });
+
+        let mut word_list = column![].spacing(5).width(Length::Fixed(250.0));
+        for word in filtered_words {
+            let is_selected = self.selected_word.as_ref() == Some(word);
+            word_list = word_list.push(
+                button(text(word))
+                    .on_press(Message::WordSelected(word.clone()))
+                    .width(Length::Fill)
+                    .style(if is_selected {
+                        button::primary
+                    } else {
+                        button::secondary
+                    }),
+            );
+        }
+
+        let content: Element<Message> = if let Some(selected) = &self.selected_word {
+            if let Some(gloss) = dict.get(selected) {
+                let examples_iter = gloss
+                    .examples
+                    .iter()
+                    .map(|ex| text(format!("• {}", ex)).into());
+                column![
+                    text(selected).size(40),
+                    text(&gloss.definition).size(20),
+                    text("Examples:").size(25),
+                    scrollable(column(examples_iter).spacing(10)),
+                ]
+                .spacing(20)
+                .into()
+            } else {
+                text("Select a word").into()
+            }
+        } else {
+            text("Select a word to view its gloss").into()
+        };
+
+        column![
+            header,
+            search_input,
+            row![
+                scrollable(container(word_list).padding(5)),
+                container(content).padding(20).width(Length::Fill)
+            ]
+            .spacing(20)
+        ]
+        .padding(20)
+        .into()
     }
 }
