@@ -1,7 +1,7 @@
 use iced::widget::{button, column, container, pick_list, row, scrollable, text, text_input};
 use iced::{Element, Length, Task, Theme};
 use serde::Deserialize;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashSet};
 use std::fmt;
 use std::fs::File;
 use std::io::BufReader;
@@ -20,10 +20,18 @@ struct Gloss {
 }
 
 #[derive(Debug, Clone, Deserialize)]
-struct Token {
-    w: String, // word
-    l: String, // lemma
-    c: bool,   // is_core
+#[serde(tag = "t")]
+enum Token {
+    #[serde(rename = "w")]
+    Word { w: String, l: String },
+    #[serde(rename = "p")]
+    Punctuation { w: String },
+    #[serde(rename = "n")]
+    Newline,
+    #[serde(rename = "s")]
+    Speaker { w: String },
+    #[serde(rename = "m")]
+    Marker { w: String },
 }
 
 type Dictionary = BTreeMap<String, Gloss>;
@@ -61,6 +69,8 @@ impl fmt::Display for ViewMode {
 struct DolphinDict {
     latin_dict: Dictionary,
     greek_dict: Dictionary,
+    latin_core: HashSet<String>,
+    greek_core: HashSet<String>,
     current_language: Language,
     view_mode: ViewMode,
     search_query: String,
@@ -80,10 +90,14 @@ impl Default for DolphinDict {
     fn default() -> Self {
         let latin_dict = load_dictionary("dict.json");
         let greek_dict = load_dictionary("greek_dict.json");
+        let latin_core = load_core_list("latin-core-list.csv");
+        let greek_core = load_core_list("greek-core-list.csv");
 
         Self {
             latin_dict,
             greek_dict,
+            latin_core,
+            greek_core,
             current_language: Language::Latin,
             view_mode: ViewMode::Glossary,
             search_query: String::new(),
@@ -112,6 +126,18 @@ fn load_dictionary(path: &str) -> Dictionary {
                 .ok()
                 .map(|gloss| (word, gloss))
         })
+        .collect()
+}
+
+fn load_core_list(path: &str) -> HashSet<String> {
+    let file = match File::open(path) {
+        Ok(f) => f,
+        Err(_) => return HashSet::new(),
+    };
+    let mut rdr = csv::Reader::from_reader(file);
+    rdr.records()
+        .filter_map(|result| result.ok())
+        .filter_map(|record| record.get(0).map(|s| s.to_lowercase()))
         .collect()
 }
 
@@ -168,6 +194,11 @@ impl DolphinDict {
         let dict = match self.current_language {
             Language::Latin => &self.latin_dict,
             Language::Greek => &self.greek_dict,
+        };
+        
+        let core_list = match self.current_language {
+            Language::Latin => &self.latin_core,
+            Language::Greek => &self.greek_core,
         };
 
         let lang_picker = pick_list(
@@ -283,41 +314,62 @@ impl DolphinDict {
             }
             ViewMode::Reader => {
                 if self.reader_tokens.is_empty() {
-                    container(text("Reader data not found. Run parse_text.py first."))
+                    container(text("Reader data not found. Run 'python main.py annotate' first."))
                         .center_x(Length::Fill)
                         .center_y(Length::Fill)
                         .width(Length::Fill)
                         .height(Length::Fill)
                         .into()
                 } else {
-                    let mut tokens_btns = Vec::new();
+                    let mut reader_col = column![].spacing(10).width(Length::Fill);
+                    let mut current_row_tokens = Vec::new();
+
                     for token in &self.reader_tokens {
-                        let is_selected = self.selected_word.as_ref() == Some(&token.l);
-                        let has_gloss = dict.contains_key(&token.l);
-                        
-                        let word_btn = button(text(&token.w))
-                            .on_press(Message::WordSelected(token.l.clone()))
-                            .padding(2)
-                            .style(if is_selected {
-                                button::primary
-                            } else if has_gloss {
-                                button::text // highlight words with glosses
-                            } else if token.c {
-                                button::secondary // core vocab
-                            } else {
-                                button::text
-                            });
-                            
-                        tokens_btns.push(word_btn.into());
+                        match token {
+                            Token::Word { w, l } => {
+                                let is_selected = self.selected_word.as_ref() == Some(l);
+                                let has_gloss = dict.contains_key(l);
+                                
+                                let word_btn = button(text(w))
+                                    .on_press(Message::WordSelected(l.clone()))
+                                    .padding(1)
+                                    .style(if is_selected {
+                                        button::primary
+                                    } else if has_gloss {
+                                        button::text // Bold/Highlighted via custom theme if possible, for now just text
+                                    } else {
+                                        button::text
+                                    });
+                                
+                                current_row_tokens.push(word_btn.into());
+                            }
+                            Token::Punctuation { w } => {
+                                current_row_tokens.push(text(w).into());
+                            }
+                            Token::Newline => {
+                                reader_col = reader_col.push(row(std::mem::take(&mut current_row_tokens)).spacing(0).wrap());
+                            }
+                            Token::Speaker { w } => {
+                                if !current_row_tokens.is_empty() {
+                                    reader_col = reader_col.push(row(std::mem::take(&mut current_row_tokens)).spacing(0).wrap());
+                                }
+                                reader_col = reader_col.push(text(w).size(22)); // Larger font for speakers
+                            }
+                            Token::Marker { w } => {
+                                current_row_tokens.push(
+                                    text(w).size(12).style(|_| iced::widget::text::Style {
+                                        color: Some(iced::Color::from_rgb(0.5, 0.5, 0.5)),
+                                    }).into()
+                                );
+                            }
+                        }
+                    }
+                    
+                    if !current_row_tokens.is_empty() {
+                        reader_col = reader_col.push(row(current_row_tokens).spacing(0).wrap());
                     }
 
-                    scrollable(
-                        container(
-                            row(tokens_btns)
-                                .spacing(5)
-                                .wrap()
-                        ).padding(20)
-                    ).into()
+                    scrollable(container(reader_col).padding(20)).into()
                 }
             }
         };
