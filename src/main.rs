@@ -225,9 +225,9 @@ fn bg_container<'a, T: 'a>(content: impl Into<Element<'a, T>>) -> Element<'a, T>
 }
 
 pub fn main() -> iced::Result {
-    iced::application(DolphinDict::boot, DolphinDict::update, DolphinDict::view)
-        .theme(DolphinDict::theme)
-        .title("DolphinDict - Immersive Reader")
+    iced::application(SharkReader::boot, SharkReader::update, SharkReader::view)
+        .theme(SharkReader::theme)
+        .title("SharkReader - Immersive Reader")
         .run()
 }
 
@@ -301,7 +301,7 @@ enum AppView {
     Glossary(Language),
 }
 
-struct DolphinDict {
+struct SharkReader {
     view: AppView,
     latin_dict: Dictionary,
     greek_dict: Dictionary,
@@ -335,7 +335,7 @@ enum Message {
     WordSelected(String),
 }
 
-impl Default for DolphinDict {
+impl Default for SharkReader {
     fn default() -> Self {
         let latin_dict = load_dictionary(LATIN_DICT_JSON);
         let greek_dict = load_dictionary(GREEK_DICT_JSON);
@@ -467,7 +467,7 @@ fn load_annotated_text(
     (data.metadata, tokens, frequencies)
 }
 
-impl DolphinDict {
+impl SharkReader {
     fn boot() -> (Self, Task<Message>) {
         (Self::default(), Task::none())
     }

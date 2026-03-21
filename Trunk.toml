@@ -1,6 +1,3 @@
 [build]
 target = "index.html"
-
-# Set this to your GitHub repository name (e.g., "/dolphindict")
-# Or leave empty for root domain deployment
 public_url = "/shark-reader"
