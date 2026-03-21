@@ -53,7 +53,12 @@ async fn fetch_text(path: &str) -> Result<String, String> {
     
     let window = web_sys::window().ok_or("No window available")?;
     
-    let resp_value = JsFuture::from(window.fetch_with_str(path))
+    // Construct full URL respecting <base> tag
+    let document = window.document().ok_or("No document available")?;
+    let base_uri = document.base_uri().map_err(|_| "No base URI")?.ok_or("No base URI".to_string())?;
+    let url = format!("{}/{}", base_uri.trim_end_matches('/'), path);
+    
+    let resp_value = JsFuture::from(window.fetch_with_str(&url))
         .await
         .map_err(|_| "Fetch failed")?;
 
