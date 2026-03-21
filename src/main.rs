@@ -1,10 +1,82 @@
-use iced::widget::{button, checkbox, column, container, row, scrollable, text, text_input};
+use iced::widget::{button, column, container, row, scrollable, text, text_input};
 use iced::{Alignment, Element, Length, Task, Theme};
 use serde::Deserialize;
 use std::collections::{BTreeMap, HashSet};
 use std::fmt;
-use std::fs::{self, File};
-use std::io::BufReader;
+
+// WASM imports for fetching
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen::prelude::*;
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen_futures::JsFuture;
+#[cfg(target_arch = "wasm32")]
+use web_sys::Response;
+
+// Embedded resources - dictionaries and core lists stay embedded
+const LATIN_DICT_JSON: &str = include_str!("../dictionaries/latin.json");
+const GREEK_DICT_JSON: &str = include_str!("../dictionaries/greek.json");
+const LATIN_CORE_CSV: &str = include_str!("../core_lists/latin-core-list.csv");
+const GREEK_CORE_CSV: &str = include_str!("../core_lists/greek-core-list.csv");
+
+// Text paths - content loaded dynamically in WASM, embedded in native builds
+#[cfg(not(target_arch = "wasm32"))]
+const TEXTS: &[(&str, &str)] = &[
+    (
+        "texts/Aeneid1.annotated.json",
+        include_str!("../texts/Aeneid1.annotated.json"),
+    ),
+    (
+        "texts/Apology.annotated.json",
+        include_str!("../texts/Apology.annotated.json"),
+    ),
+    (
+        "texts/Crito.annotated.json",
+        include_str!("../texts/Crito.annotated.json"),
+    ),
+    (
+        "texts/Meno.annotated.json",
+        include_str!("../texts/Meno.annotated.json"),
+    ),
+];
+
+#[cfg(target_arch = "wasm32")]
+const TEXTS: &[(&str, &str)] = &[
+    ("texts/Aeneid1.annotated.json", ""),
+    ("texts/Apology.annotated.json", ""),
+    ("texts/Crito.annotated.json", ""),
+    ("texts/Meno.annotated.json", ""),
+];
+
+#[cfg(target_arch = "wasm32")]
+async fn fetch_text(path: &str) -> Result<String, String> {
+    use wasm_bindgen::JsCast;
+    
+    let window = web_sys::window().ok_or("No window available")?;
+    
+    let resp_value = JsFuture::from(window.fetch_with_str(path))
+        .await
+        .map_err(|_| "Fetch failed")?;
+
+    let resp: Response = resp_value.dyn_into().map_err(|_| "Invalid response")?;
+
+    if !resp.ok() {
+        return Err(format!("HTTP error: {}", resp.status()));
+    }
+
+    let text = JsFuture::from(resp.text().map_err(|_| "Failed to get text")?)
+        .await
+        .map_err(|_| "Failed to read response body")?;
+
+    text.as_string().ok_or("Invalid text content".to_string())
+}
+
+#[cfg(target_arch = "wasm32")]
+async fn fetch_text_task(text_meta: TextMetadata) -> Result<Vec<Token>, String> {
+    let content = fetch_text(&text_meta.path).await?;
+    let data: AnnotatedText = serde_json::from_str(&content)
+        .map_err(|_| "Failed to parse annotated text")?;
+    Ok(data.tokens)
+}
 
 const COLOR_BG: iced::Color = iced::Color::from_rgb(0.10, 0.10, 0.18);
 const COLOR_SURFACE: iced::Color = iced::Color::from_rgb(0.14, 0.14, 0.24);
@@ -240,6 +312,10 @@ struct DolphinDict {
     selected_word: Option<String>,
     reader_tokens: Vec<Token>,
     lemma_frequencies: BTreeMap<String, f64>,
+
+    // Loading State
+    is_loading: bool,
+    loading_error: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -247,6 +323,8 @@ enum Message {
     SearchChanged(String),
     ToggleInterfaceLang,
     TextSelected(TextMetadata),
+    #[cfg(target_arch = "wasm32")]
+    TextLoaded(Result<(TextMetadata, Vec<Token>, BTreeMap<String, f64>), String>),
     BackToLibrary,
     OpenGlossary(Language),
     WordSelected(String),
@@ -254,32 +332,58 @@ enum Message {
 
 impl Default for DolphinDict {
     fn default() -> Self {
-        let latin_dict = load_dictionary("dictionaries/latin.json");
-        let greek_dict = load_dictionary("dictionaries/greek.json");
-        let latin_core = load_core_list("core_lists/latin-core-list.csv");
-        let greek_core = load_core_list("core_lists/greek-core-list.csv");
+        let latin_dict = load_dictionary(LATIN_DICT_JSON);
+        let greek_dict = load_dictionary(GREEK_DICT_JSON);
+        let latin_core = load_core_list(LATIN_CORE_CSV);
+        let greek_core = load_core_list(GREEK_CORE_CSV);
 
         let mut available_texts = Vec::new();
-        if let Ok(entries) = fs::read_dir("texts") {
-            for entry in entries.flatten() {
-                let path = entry.path();
-                if path.extension().and_then(|s| s.to_str()) == Some("json") {
-                    if let Ok(file) = File::open(&path) {
-                        let reader = BufReader::new(file);
-                        // We only need to peek at the metadata
-                        if let Ok(data) = serde_json::from_reader::<_, serde_json::Value>(reader) {
-                            if let Some(meta_val) = data.get("metadata") {
-                                if let Ok(mut meta) =
-                                    serde_json::from_value::<TextMetadata>(meta_val.clone())
-                                {
-                                    meta.path = path.to_string_lossy().into_owned();
-                                    available_texts.push(meta);
-                                }
-                            }
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            for (path, content) in TEXTS {
+                if let Ok(data) = serde_json::from_str::<serde_json::Value>(content) {
+                    if let Some(meta_val) = data.get("metadata") {
+                        if let Ok(mut meta) = serde_json::from_value::<TextMetadata>(meta_val.clone()) {
+                            meta.path = path.to_string();
+                            available_texts.push(meta);
                         }
                     }
                 }
             }
+        }
+        #[cfg(target_arch = "wasm32")]
+        {
+            // WASM: metadata is hardcoded since we can't parse embedded content
+            available_texts = vec![
+                TextMetadata {
+                    title: "Aeneis, Prīmus Liber".to_string(),
+                    author: "Publius Vergilius Marō".to_string(),
+                    language: Language::Latin,
+                    work_type: WorkType::Poem,
+                    path: "texts/Aeneid1.annotated.json".to_string(),
+                },
+                TextMetadata {
+                    title: "Ἀπολογία Σωκράτους".to_string(),
+                    author: "Πλάτων".to_string(),
+                    language: Language::Greek,
+                    work_type: WorkType::Dialogue,
+                    path: "texts/Apology.annotated.json".to_string(),
+                },
+                TextMetadata {
+                    title: "Κρίτων".to_string(),
+                    author: "Πλάτων".to_string(),
+                    language: Language::Greek,
+                    work_type: WorkType::Dialogue,
+                    path: "texts/Crito.annotated.json".to_string(),
+                },
+                TextMetadata {
+                    title: "Μένων".to_string(),
+                    author: "Πλάτων".to_string(),
+                    language: Language::Greek,
+                    work_type: WorkType::Dialogue,
+                    path: "texts/Meno.annotated.json".to_string(),
+                },
+            ];
         }
 
         Self {
@@ -294,18 +398,14 @@ impl Default for DolphinDict {
             selected_word: None,
             reader_tokens: Vec::new(),
             lemma_frequencies: BTreeMap::new(),
+            is_loading: false,
+            loading_error: None,
         }
     }
 }
 
-fn load_dictionary(path: &str) -> Dictionary {
-    let file = match File::open(path) {
-        Ok(f) => f,
-        Err(_) => return BTreeMap::new(),
-    };
-    let reader = BufReader::new(file);
-
-    let raw_dict: BTreeMap<String, serde_json::Value> = match serde_json::from_reader(reader) {
+fn load_dictionary(content: &str) -> Dictionary {
+    let raw_dict: BTreeMap<String, serde_json::Value> = match serde_json::from_str(content) {
         Ok(d) => d,
         Err(_) => return BTreeMap::new(),
     };
@@ -320,27 +420,21 @@ fn load_dictionary(path: &str) -> Dictionary {
         .collect()
 }
 
-fn load_core_list(path: &str) -> HashSet<String> {
-    let file = match File::open(path) {
-        Ok(f) => f,
-        Err(_) => return HashSet::new(),
-    };
-    let mut rdr = csv::Reader::from_reader(file);
+fn load_core_list(content: &str) -> HashSet<String> {
+    let mut rdr = csv::Reader::from_reader(content.as_bytes());
     rdr.records()
         .filter_map(|result| result.ok())
         .filter_map(|record| record.get(0).map(|s| s.to_lowercase()))
         .collect()
 }
 
-fn load_annotated_text(path: &str) -> (TextMetadata, Vec<Token>, BTreeMap<String, f64>) {
-    let file = match File::open(path) {
-        Ok(f) => f,
-        Err(_) => panic!("Failed to open text file: {}", path),
-    };
-    let reader = BufReader::new(file);
+fn load_annotated_text(
+    content: &str,
+    path: String,
+) -> (TextMetadata, Vec<Token>, BTreeMap<String, f64>) {
     let mut data: AnnotatedText =
-        serde_json::from_reader(reader).expect("Failed to parse annotated text");
-    data.metadata.path = path.to_string();
+        serde_json::from_str(content).expect("Failed to parse annotated text");
+    data.metadata.path = path;
 
     let tokens = data.tokens;
     let mut lemma_counts: BTreeMap<String, usize> = BTreeMap::new();
@@ -382,17 +476,59 @@ impl DolphinDict {
                 self.interface_lang = self.interface_lang.next();
             }
             Message::TextSelected(text_meta) => {
-                let (meta, tokens, frequencies) = load_annotated_text(&text_meta.path);
-                self.reader_tokens = tokens;
-                self.lemma_frequencies = frequencies;
-                self.view = AppView::Reader(meta);
-                self.selected_word = None;
+                #[cfg(not(target_arch = "wasm32"))]
+                {
+                    // Native: use embedded content
+                    let content = TEXTS
+                        .iter()
+                        .find(|(p, _)| *p == text_meta.path)
+                        .map(|(_, c)| *c)
+                        .expect("Text not found in embedded resources");
+                    let (meta, tokens, frequencies) = load_annotated_text(content, text_meta.path);
+                    self.reader_tokens = tokens;
+                    self.lemma_frequencies = frequencies;
+                    self.view = AppView::Reader(meta);
+                    self.selected_word = None;
+                    self.loading_error = None;
+                }
+                #[cfg(target_arch = "wasm32")]
+                {
+                    // WASM: set loading state and dispatch async fetch
+                    self.is_loading = true;
+                    self.loading_error = None;
+                    self.view = AppView::Reader(text_meta.clone());
+                    self.selected_word = None;
+                    return Task::perform(
+                        fetch_text_task(text_meta.clone()),
+                        move |result| Message::TextLoaded(result.map(|tokens| {
+                            (text_meta.clone(), tokens, BTreeMap::new())
+                        }).map_err(|e| e)),
+                    );
+                }
+            }
+            #[cfg(target_arch = "wasm32")]
+            Message::TextLoaded(result) => {
+                self.is_loading = false;
+                match result {
+                    Ok((meta, tokens, frequencies)) => {
+                        self.reader_tokens = tokens;
+                        self.lemma_frequencies = frequencies;
+                        self.view = AppView::Reader(meta);
+                        self.loading_error = None;
+                    }
+                    Err(err) => {
+                        self.loading_error = Some(err);
+                        self.reader_tokens = Vec::new();
+                    }
+                }
             }
             Message::BackToLibrary => {
                 self.view = AppView::Library;
                 self.reader_tokens = Vec::new();
                 self.selected_word = None;
                 self.lemma_frequencies = BTreeMap::new();
+                self.is_loading = false;
+                self.loading_error = None;
             }
             Message::OpenGlossary(lang) => {
                 self.view = AppView::Glossary(lang);
@@ -557,7 +693,7 @@ impl DolphinDict {
             match token {
                 Token::Word { w, l } => {
                     let is_selected = self.selected_word.as_ref() == Some(l);
-                    let has_gloss = dict.contains_key(l);
+                    let _has_gloss = dict.contains_key(l);
 
                     let word_btn = button(text(w).size(18))
                         .on_press(Message::WordSelected(l.clone()))
@@ -629,7 +765,38 @@ impl DolphinDict {
             reader_col = reader_col.push(row(current_row_tokens).spacing(5).wrap());
         }
 
-        let main_reader = scrollable(container(reader_col).padding(32));
+        // Show loading, error, or content
+        let main_reader: Element<Message> = if self.is_loading {
+            container(
+                column![
+                    text("Loading...").size(24),
+                    text("Fetching text from server").size(14).style(|_| iced::widget::text::Style {
+                        color: Some(COLOR_TEXT_MUTED),
+                    }),
+                ]
+                .spacing(12)
+                .align_x(Alignment::Center),
+            )
+            .center(Length::Fill)
+            .into()
+        } else if let Some(err) = &self.loading_error {
+            container(
+                column![
+                    text("Failed to load text").size(24).style(|_| iced::widget::text::Style {
+                        color: Some(iced::Color::from_rgb(0.9, 0.3, 0.3)),
+                    }),
+                    text(err).size(14).style(|_| iced::widget::text::Style {
+                        color: Some(COLOR_TEXT_MUTED),
+                    }),
+                ]
+                .spacing(12)
+                .align_x(Alignment::Center),
+            )
+            .center(Length::Fill)
+            .into()
+        } else {
+            scrollable(container(reader_col).padding(32)).into()
+        };
 
         let sidebar: Element<Message> = if let Some(selected) = &self.selected_word {
             let is_core = core_list.contains(&selected.to_lowercase());
@@ -731,7 +898,7 @@ impl DolphinDict {
             column![
                 header,
                 row![
-                    main_reader.width(Length::Fill),
+                    main_reader,
                     container(sidebar).width(Length::Fixed(350.0)).padding(24)
                 ]
                 .spacing(24)

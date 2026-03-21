@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SharkReader - Immersive Reader</title>
+    <base data-trunk-public-url />
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #1a1a2e; /* Matches COLOR_BG from main.rs */
+            color: #f2f2f7; /* Matches COLOR_TEXT */
+            font-family: sans-serif;
+        }
+        #iced-container {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <link data-trunk rel="rust" href="Cargo.toml" />
+    <link data-trunk rel="copy-dir" href="texts" />
+</body>
+</html>
