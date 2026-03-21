@@ -50,14 +50,17 @@ const TEXTS: &[(&str, &str)] = &[
 #[cfg(target_arch = "wasm32")]
 async fn fetch_text(path: &str) -> Result<String, String> {
     use wasm_bindgen::JsCast;
-    
+
     let window = web_sys::window().ok_or("No window available")?;
-    
+
     // Construct full URL respecting <base> tag
     let document = window.document().ok_or("No document available")?;
-    let base_uri = document.base_uri().map_err(|_| "No base URI")?.ok_or("No base URI".to_string())?;
+    let base_uri = document
+        .base_uri()
+        .map_err(|_| "No base URI")?
+        .ok_or("No base URI".to_string())?;
     let url = format!("{}/{}", base_uri.trim_end_matches('/'), path);
-    
+
     let resp_value = JsFuture::from(window.fetch_with_str(&url))
         .await
         .map_err(|_| "Fetch failed")?;
@@ -78,8 +81,8 @@ async fn fetch_text(path: &str) -> Result<String, String> {
 #[cfg(target_arch = "wasm32")]
 async fn fetch_text_task(text_meta: TextMetadata) -> Result<Vec<Token>, String> {
     let content = fetch_text(&text_meta.path).await?;
-    let data: AnnotatedText = serde_json::from_str(&content)
-        .map_err(|_| "Failed to parse annotated text")?;
+    let data: AnnotatedText =
+        serde_json::from_str(&content).map_err(|_| "Failed to parse annotated text")?;
     Ok(data.tokens)
 }
 
@@ -348,7 +351,9 @@ impl Default for SharkReader {
             for (path, content) in TEXTS {
                 if let Ok(data) = serde_json::from_str::<serde_json::Value>(content) {
                     if let Some(meta_val) = data.get("metadata") {
-                        if let Ok(mut meta) = serde_json::from_value::<TextMetadata>(meta_val.clone()) {
+                        if let Ok(mut meta) =
+                            serde_json::from_value::<TextMetadata>(meta_val.clone())
+                        {
                             meta.path = path.to_string();
                             available_texts.push(meta);
                         }
@@ -503,12 +508,13 @@ impl SharkReader {
                     self.loading_error = None;
                     self.view = AppView::Reader(text_meta.clone());
                     self.selected_word = None;
-                    return Task::perform(
-                        fetch_text_task(text_meta.clone()),
-                        move |result| Message::TextLoaded(result.map(|tokens| {
-                            (text_meta.clone(), tokens, BTreeMap::new())
-                        }).map_err(|e| e)),
-                    );
+                    return Task::perform(fetch_text_task(text_meta.clone()), move |result| {
+                        Message::TextLoaded(
+                            result
+                                .map(|tokens| (text_meta.clone(), tokens, BTreeMap::new()))
+                                .map_err(|e| e),
+                        )
+                    });
                 }
             }
             #[cfg(target_arch = "wasm32")]
@@ -658,7 +664,7 @@ impl SharkReader {
                 glossary_buttons,
             ]
             .spacing(24)
-            .max_width(800.0)
+            .max_width(500.0)
             .align_x(Alignment::Center),
         )
     }
@@ -775,8 +781,10 @@ impl SharkReader {
             container(
                 column![
                     text("Loading...").size(24),
-                    text("Fetching text from server").size(14).style(|_| iced::widget::text::Style {
-                        color: Some(COLOR_TEXT_MUTED),
+                    text("Fetching text from server").size(14).style(|_| {
+                        iced::widget::text::Style {
+                            color: Some(COLOR_TEXT_MUTED),
+                        }
                     }),
                 ]
                 .spacing(12)
@@ -787,9 +795,11 @@ impl SharkReader {
         } else if let Some(err) = &self.loading_error {
             container(
                 column![
-                    text("Failed to load text").size(24).style(|_| iced::widget::text::Style {
-                        color: Some(iced::Color::from_rgb(0.9, 0.3, 0.3)),
-                    }),
+                    text("Failed to load text")
+                        .size(24)
+                        .style(|_| iced::widget::text::Style {
+                            color: Some(iced::Color::from_rgb(0.9, 0.3, 0.3)),
+                        }),
                     text(err).size(14).style(|_| iced::widget::text::Style {
                         color: Some(COLOR_TEXT_MUTED),
                     }),
@@ -908,6 +918,7 @@ impl SharkReader {
                 ]
                 .spacing(24)
             ]
+            .max_width(1200)
             .padding(24),
         )
     }
@@ -1001,11 +1012,12 @@ impl SharkReader {
                 header,
                 search_input,
                 row![
-                    scrollable(container(word_list).padding(8)),
-                    container(content).padding(32).width(Length::Fill)
+                    scrollable(container(word_list).padding(32)).width(Length::Fixed(250.)),
+                    container(content).padding(16).width(Length::Fill)
                 ]
                 .spacing(24)
             ]
+            .max_width(1200)
             .padding(32),
         )
     }
