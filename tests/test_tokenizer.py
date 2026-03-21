@@ -2,7 +2,7 @@
 
 import pytest
 
-from dolphindict import tokenizer
+from sharkreader import tokenizer
 
 
 class TestCleanText:

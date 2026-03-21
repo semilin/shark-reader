@@ -5,8 +5,8 @@ import logging
 import re
 from typing import Any
 
-from dolphindict.config import ANNOTATION_MODEL, LanguageConfig
-from dolphindict.tokenizer import get_word_pattern
+from sharkreader.config import ANNOTATION_MODEL, LanguageConfig
+from sharkreader.tokenizer import get_word_pattern
 
 logger = logging.getLogger(__name__)
 

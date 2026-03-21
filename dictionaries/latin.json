@@ -14976,5 +14976,452 @@
       "Imperātor sevērus vultū suō mīlitēs terrēre potest.",
       "In vultibus eōrum magnam spem et fidem vidēmus."
     ]
+  },
+  "fari": {
+    "definition": "Hoc verbum significat verba ex ōre dūcere vel rēs dīcere. Quī fātur, vōcem hūmānam et verba ad aliōs mittit.",
+    "examples": [
+      "Pater fātur multa verba bona fīliīs suīs.",
+      "Fātus est rēx dē bellō mōx ventūrō.",
+      "Mēns hominis nōn videtur dum ipse fārī incipit."
+    ]
+  },
+  "adnavigo": {
+    "definition": "Nāve ad locum quendam venīre. Hoc est iter per aquam ad terram vel ad urbem facere.",
+    "examples": [
+      "Nauta fessus ad īnsulam lātā nāve adnavigat.",
+      "Post multōs diēs in aequore, virī ad lītus adnavigant.",
+      "Dux noster ad hostium terram adnavigāre nōn audet."
+    ]
+  },
+  "collectus": {
+    "definition": "Hoc verbum est ex colligō. Est rēs vel multitūdō hominum quae sub unum locum adhibētur vel dūcitur.",
+    "examples": [
+      "Exercitus collectus in campum descendit.",
+      "Litterae ab amīcō collectae in mēnsā positae sunt.",
+      "Aquā collectā, puerī ad urbem rediērunt.",
+      "Vir rēs suās collectās ad novam domum portat."
+    ]
+  },
+  "asia": {
+    "definition": "Asia est magna terra in quā multī hominēs et multae gentēs habitant; haec terra ad orientem sōlem iacet.",
+    "examples": [
+      "Asia est patria nōbilis et fīnitima Graeciae.",
+      "Trōia in Asiā sita est, ubi bellum ācre gestum est.",
+      "Multī Rōmānī ex Asiā aurum et argentum domum ferēbant.",
+      "In magnam Asiam lēgātus cum exercitibus pervēnit."
+    ]
+  },
+  "coniux": {
+    "definition": "Coniunx est fēmina quae cum virō vīvit, vel vir quī cum fēminā vīvit; amōre vinctī sunt et ūnum domum habent.",
+    "examples": [
+      "Coniunx mea fēmina bona et pulchra est.",
+      "Vir dōna fīliīs et coniugī suae dat.",
+      "Multae coniugēs in urbe viros ex bellō exspectant.",
+      "Paulus cum fīdā coniuge vītam agere cupit."
+    ]
+  },
+  "adversusque": {
+    "definition": "Hoc verbum significat 'contrā' vel 'ad' aliquem aut aliquid. Cum aliquis vel aliquid adversus est, is contra alterum stat aut contrā vītam errat.",
+    "examples": [
+      "Adversusque hostēs mīlitēs fortiter pūgnant.",
+      "Fortūna adversaque hominēs dūrōs facit.",
+      "Aequor adversumque nāvem prohibēre cōnātur."
+    ]
+  },
+  "appareo": {
+    "definition": "Appāreō est verbum quod dīcit aliquid ad oculōs venīre et vidērī posse. Cum rēs nōn iam latet, tunc appāret.",
+    "examples": [
+      "In caelō mox multae stellae appārent.",
+      "Post tempestātem sōl clārus appāruit.",
+      "Lūmen in tenebrīs appārēre incipit.",
+      "Eī nūntius deī in somnō appārēbat."
+    ]
+  },
+  "facere": {
+    "definition": "Facere est agere aliquid vel efficere rēs quās anteā nōn vīdimus. Cum homō labōrat, ipse rēs facit.",
+    "examples": [
+      "Puer bonus multa per diem facit.",
+      "Tūne fēcistī id quod iūssī?",
+      "Hominēs multās rēs vīribus suis facient.",
+      "Cōnsilium ab omnibus amīcīs factum est."
+    ]
+  },
+  "dexter": {
+    "definition": "Dexter est latus corporis in quō homō gladium tenet. Est contrā latus laevum.",
+    "examples": [
+      "Dextra manus mīlitis gladium gerit.",
+      "Puer ad dextram partem viae currit.",
+      "Equus ā dextrā advenit."
+    ]
+  },
+  "Typhoius": {
+    "definition": "Typhoius est ferus mōnstrum et magnus hostis deōrum quī sub terrā vel sub monte manet. Is flammas ex ore fundit et caelum vincere temptat.",
+    "examples": [
+      "Typhoius sub monte magno iacet et terram movet.",
+      "Iuppiter fulmen in Typhoium iacit ut deos servet.",
+      "Multi pavore cadunt cum vocem Typhoii audiunt."
+    ]
+  },
+  "Deus": {
+    "definition": "Deus est nūmen aeternum quod in caelō habitat et mundum regit. Homine potentior est et ā populō in templīs adōrātur.",
+    "examples": [
+      "Iuppiter est māgnus deus quī in caelō habitat.",
+      "Ad altam āram deī hominēs dona ferunt.",
+      "Dī immortālēs amīcōs pios iuvant.",
+      "Augustus dīcit sē esse filium deī."
+    ]
+  },
+  "Lavinia": {
+    "definition": "Lavinia est fēmina Rōmāna et fīlia rēgis. Haec puella est uxor virī fortis quī ad Italiam ex urbe Troiā vēnit.",
+    "examples": [
+      "Lavinia est pulchra rēgis fīlia.",
+      "Pater Laviniam virō aliēnō in mātrimōnium dat.",
+      "In Italiā rēx novam urbem dē nōmine Laviniae appellat.",
+      "Lavinia maestā mente bellum inter amīcōs spectat."
+    ]
+  },
+  "dicere": {
+    "definition": "Dīcere est verbīs ūti ut aliī aliquid cognōscant. Homō quī dīcit, vōcem mittit et rēs nārrat.",
+    "examples": [
+      "Pater fīliō bonum vīnum nōn esse dīcit.",
+      "Breviter dīxī quae in animō meō erant.",
+      "Nēmō in urbe rēs falsās dīcere dēbet.",
+      "Cum amīcīs dē bellō mox dīcēmus."
+    ]
+  },
+  "accubo": {
+    "definition": "Accubāre est in lectō vel in terrā iacēre. Homō quī accubat nōn stat et nōn sedet, sed corpus eius in locō est.",
+    "examples": [
+      "Marcus ad mēnsam in convivīō accubat.",
+      "Bovēs fessī in herbā sub arboribus accubant.",
+      "Iūlia per noctem tōtam in lectō suō accubābat.",
+      "Cūr tū sōlus hīc sub umbrā accubās?"
+    ]
+  },
+  "ceterus": {
+    "definition": "Cēterus est alius quī superest. In hāc parte sunt rēs vel hominēs quī nōn ante dīctī sunt.",
+    "examples": [
+      "Ūnus puer in vīā rīdet, cēterī puerī tacent.",
+      "Māter fīliam vocat, sed cēterās puellās nōn videt.",
+      "Lēgātus mīlitibus dīcit: Aliquī in castrīs manent, prōcēdite cēterī!",
+      "Dā mihi vīnum, dē cēterīs rēbus nōlō cōgitāre."
+    ]
+  },
+  "emittere": {
+    "definition": "Ēmittere est aliquem vel aliquid ex locō ad alium locum mittere, vel rēs ex manū iacere.",
+    "examples": [
+      "Servus ā dominō dē domō ēmittitur ut cibum quaerat.",
+      "Mīles tēlum in hostem magnā cum vī ēmīsit.",
+      "Vōcem laetam ēmittimus cum amīcōs nostrōs vidēmus.",
+      "Custōs vīnum ē vāse in terram ēmittebat."
+    ]
+  },
+  "Bellum": {
+    "definition": "Bellum est rēs in quā mīlitēs et populī armīs pūgnant. In hāc rē multī hominēs ab hostibus interficiuntur.",
+    "examples": [
+      "Post multōs annōs, bellum inter duōs populōs tandem dēsinit.",
+      "Rōmānī in bellō fortēs sunt et hostēs vincere possunt.",
+      "Ducēs bella gerunt ut fāmam et victōriam accipiant.",
+      "In bellīs saevīs multae urbēs ā mīlitibus dēlentur."
+    ]
+  },
+  "circumfundere": {
+    "definition": "Circumfundere est undique fundere vel aliquid circā rem pōnere. Ubi aqua vel flamma rem tenet, ista rēs circumfusa esse dīcitur.",
+    "examples": [
+      "Aqua flūminis alta mūrōs urbis circumfundit.",
+      "Hostēs vītāre nōn possumus quod pūgna nōs circumfundit.",
+      "Aer tōtam terram circumfūdit et vītam animālibus dat.",
+      "Clāmor ingēns mīlitem circumfūsus est ubi in aciem vēnit."
+    ]
+  },
+  "Regina": {
+    "definition": "Rēgīna est fēmina quae rēgnum tenet et populum regit. Ea est coniunx rēgis vel fēmina quae ipsa summam potestātem habet.",
+    "examples": [
+      "Rēgīna magna cum dīgnitāte ante populum stat.",
+      "Mīlitēs ad rēgīnam veniunt et dōna afferunt.",
+      "In multīs fābulīs rēgīnae sunt pulchrae et sapientēs.",
+      "Reliquiī cīvēs vōcem rēgīnae in forō audiunt."
+    ]
+  },
+  "laqueare": {
+    "definition": "Laqueare est alta pars tēctī in aedibus vel templō. Haec rēs est super capita hominum quī intrā sunt.",
+    "examples": [
+      "Aureum laqueare in aedibus rēgis fulget.",
+      "Aureus color in magnīs laqueāribus vidētur.",
+      "Oculī nostrī ad tēcti laqueare tolluntur."
+    ]
+  },
+  "inque": {
+    "definition": "Hoc verbum significat 'in' et 'que'. Est pars verbi 'inquam' vel significat rem in quā aliquis dīcit.",
+    "examples": [
+      "Inque hōc locō dīcit vir amīcīs suīs.",
+      "Puer currit inque aquam sē iacit.",
+      "Templum inque eō rēx sunt."
+    ]
+  },
+  "respondere": {
+    "definition": "Respondet ille quī dīcit aliquid postquam aliās vōcēs audīvit vel postquam interrogātus est.",
+    "examples": [
+      "Puer magistro interrogantī nōn respondit.",
+      "Bonae puellae ad verba mātria rēctē respondent.",
+      "Ubi tū mē vocāvistī, ego tibi statim respondī."
+    ]
+  },
+  "purgare": {
+    "definition": "Pūrgāre est rem facere mundam et dē eā rē id quod est malum et non mundum auferre.",
+    "examples": [
+      "Servus domum tōtam pūrgat ut dominō placeat.",
+      "Aequum est animum ā vitiīs pūrgāre.",
+      "Aquā pūrā corpus pūrgāvistī."
+    ]
+  },
+  "miscere": {
+    "definition": "Misceō est facere ex duābus rēbus ūnam rem aut multās rēs in ūnum locum pōnere.",
+    "examples": [
+      "Servus vīnum et aquam in pōculō miscēbat.",
+      "Multae gentēs in illā terrā miscentur.",
+      "Ira et amor in animō puellae mixta sunt.",
+      "Bona cum malīs miscēre nōn dēbēmus."
+    ]
+  },
+  "restans": {
+    "definition": "Rēstāns est is quī nōn discēdit sed in locō manet. Est quī superest postquam cēterī abiērunt.",
+    "examples": [
+      "Hic rēstāns homō in urbe vīvere cupit.",
+      "Paucī rēstantēs vātēs vēra verba dīcunt.",
+      "Lūx sōlis rēstantī amīcō spem dat."
+    ]
+  },
+  "qua": {
+    "definition": "Hāc viā vel hāc parte; in quō locō vel quā ratiōne.",
+    "examples": [
+      "Viā quā vēnistī, redeundum est tibi.",
+      "Nunc vidēmus quā ratiōne hostēs vincere possīmus.",
+      "Quā iter faciēbant, multa corpora in terrā iacēbant.",
+      "Amīcī ad urbem pervēnērunt quā rēx habitābat."
+    ]
+  },
+  "insideo": {
+    "definition": "Insidēre est in rē aut super rem sedēre. Quī insidet, locum tenet et nōn discēdit.",
+    "examples": [
+      "Vātes in arce mediā insidet et deōs precātur.",
+      "Marcus equō albō īnsidēbat et per campum properābat.",
+      "Mīlitēs in moenibus urbis īnsident ut fīnēs dēfendant.",
+      "Fēmina maesta in terrā īnsidēre vult."
+    ]
+  },
+  "incensus": {
+    "definition": "Hic rēs est flamma quā arbor vel domus ārdēre potest. Id dīcitur dē eō quī īrā acri movētur.",
+    "examples": [
+      "Aedēs flammīs incensae sunt.",
+      "Puer īrā incensus ad hostem cucurrit.",
+      "Marcus in agrō fruticēs incensōs videt.",
+      "Femina glōriae cupīdine incensa laborat."
+    ]
+  },
+  "iamque": {
+    "definition": "Hoc verbum dīcit rem post breve tempus venīre vel iam adesse. Est ferē idem ac 'iam' et 'et'.",
+    "examples": [
+      "Iamque sōl ab aethere ad terram dēscendit.",
+      "Līberī ad mātrem currunt iamque domum intrant.",
+      "Puerī labōrant iamque fessī sunt."
+    ]
+  },
+  "resideo": {
+    "definition": "Resideo est in locō diū manēre vel iterum sedēre.",
+    "examples": [
+      "Iūdex in mediō forō residet et verba dīcit.",
+      "Post longum iter, mīlitēs fessī in terrā residēbant.",
+      "In altīs sēdibus vestrīs residētis, ō dīvī.",
+      "Puer ad arborem residēre vult."
+    ]
+  },
+  "laeva": {
+    "definition": "Laeva est manus quae nōn est dextera. Haec pars corporis ad cor est et nōn ad gladium.",
+    "examples": [
+      "Puer laevā manū tēlum tenet et dēfendit sē.",
+      "In laevā Caesaris erat amīcus fidēlis.",
+      "Mīles scūtum in laevā portābat ut corpus tegeret."
+    ]
+  },
+  "parvus": {
+    "definition": "Parvus est modus rērum quae nōn māgnae sunt. Hoc est contrā māgnum.",
+    "examples": [
+      "Puer parvus in agrō lūdit et aqua eum nōn terret.",
+      "Parva dōna amīcīs saepe grāta sunt.",
+      "Ex parvīs initiīs rēs māgnae prōcēdere possunt.",
+      "In parva īnsulā paucī hominēs habitant."
+    ]
+  },
+  "plus": {
+    "definition": "Plus significat māiōrem numerum vel māiōrem partem rērum. Est contrāribum quam minus.",
+    "examples": [
+      "Harpalus plūs argenti quam pūblicī aurī habet.",
+      "Tū plūs pecūniae ā mē petis quam dēbeō.",
+      "In hōrā amīcī plūs vīnī bibunt et rīdent.",
+      "Nēmō plūs amōris mihi praebet quam māter mea."
+    ]
+  },
+  "poenitet": {
+    "definition": "Poenitet est verbum quod significat hominem dolēre propter id quod fēcit. Cum hominem factī pessimi poenitet, ipse cupit sē aliter ēgisse.",
+    "examples": [
+      "Mē poenitet sceleris meī et nunc valdē fleō.",
+      "Tēne factōrum tuōrum umquam poenitet?",
+      "Puerum nōn poenituit quod amīcum in perīculō dēseruit.",
+      "Sī vōs errōris vestrī poenitēbit, veniam accipiētis."
+    ]
+  },
+  "misereor": {
+    "definition": "Hic animus afficitur cum homō videt alium in malō cāsū vel in dolōre. Is quī hoc facit vult auxilium ferre miserō.",
+    "examples": [
+      "Iūdex clēmēns misertus est reī quī fessus flēbat.",
+      "Miserēre nostrī, nam in māgnō perīculō sumus!",
+      "Bonī hominēs amīcōrum egēntium semper miserentur."
+    ]
+  },
+  "refundere": {
+    "definition": "Refundere est rūrsus fundere vel fundere id quod accēptum est. Est reddere aquam aut aquam in locum unde vēnit remittere.",
+    "examples": [
+      "Aqua in mare refunditur postquam in lītus vēnit.",
+      "Flūmen magnās aquās in aequor refundit.",
+      "Lacrimās eāsdem quās accēpī tibi refundam.",
+      "Puer vinum ex pōculō in terram refūdit."
+    ]
+  },
+  "laetans": {
+    "definition": "Laetāns est homō quī laetus est et gaudium in corde habet. Is quī bene sē habet et rīdet est laetāns.",
+    "examples": [
+      "Māter laetāns fīlium suum videt et eum ad sē vocat.",
+      "Mīlitēs laetantēs ex bellō ad urbem redeunt quod vīcērunt.",
+      "Puerō laetantī pater dōnum māgnum dat.",
+      "Puella laetāns in agrīs cum amīcīs currit."
+    ]
+  },
+  "pendens": {
+    "definition": "Hic modus dīcit rem quae nōn in terrā iacet, sed ab altō locō tenētur et sub aere est.",
+    "examples": [
+      "Fōrma aurea dē rēgis mūrō pendēns ā multis cernitur.",
+      "Puer vīdet pōma in arboribus pendentia.",
+      "In aedibus mīlitis arma ab altō pendent."
+    ]
+  },
+  "quicumque": {
+    "definition": "Quīcumque est nōmen quod dīcit: 'omnis is quī'. Significat quālamque persōnam vel rem sine certō nōmine.",
+    "examples": [
+      "Quīcumque hūc venit, amīcus meus est.",
+      "Quaecumque fēmina bonum animum habet, beāta est.",
+      "Quascumque rēs tū petis, ego tibi dō."
+    ]
+  },
+  "tergus": {
+    "definition": "Tergum est pars corporis āversa ā fronte. In hāc parte corporis onus portārī potest.",
+    "examples": [
+      "Puer librōs in tergō portat.",
+      "Mīles scūtum ad tergum vertit.",
+      "Avis ālās super terga movet."
+    ]
+  },
+  "sacratus": {
+    "definition": "Sacrātus est rēs vel homō quī deīs datus est et ad templum pertinet. Hoc est sānctum et nōn pūblicum.",
+    "examples": [
+      "Sacerdōs in locō sacrātō ante āram stat.",
+      "Mūnus sacrātum deō in templō ponit.",
+      "Vātum carmina sacrāta esse dīcuntur."
+    ]
+  },
+  "scindere": {
+    "definition": "Scindere est rem in duās vel multās partēs dīvidere. Sī fēmīna vestem scindit, rēs rūpta est et nōn iam integra.",
+    "examples": [
+      "Puer īrātus epistulam suam scindere vult.",
+      "Gladius ācer tēctum et arma hostis scindit.",
+      "Vestis puellae in silvā scissa est."
+    ]
+  },
+  "vereri": {
+    "definition": "Verērī est timēre vel timōrem habēre. Quī verētur, is nōn est audāx sed metum sentit.",
+    "examples": [
+      "Puer patrem verētur et sub dēfēnsiōne eius manet.",
+      "Bōnī cīvēs lēgēs verentur.",
+      "Mors ā multīs hominibus verētur.",
+      "Marcus, veritus īram deī, ad āram venit."
+    ]
+  },
+  "trio": {
+    "definition": "Trio est nomen quod ad boves refertur qui terram colerent. Tres boves una agere iussi hoc nomen habent.",
+    "examples": [
+      "Agricola boves iungit ut triōnes agrum colant.",
+      "Per noctem in caelō vidēmus stellās quās hominēs triōnēs appellant.",
+      "Bōs quī sōlus est nōn iam triō dīcitur."
+    ]
+  },
+  "tremens": {
+    "definition": "Tremēns est quī propter metum vel propter morbum corpus movet et sē regere nōn potest. Homō tremēns nōn est fīrmus.",
+    "examples": [
+      "Puer tremēns ante imperātōrem stat et nihil dīcit.",
+      "Māra vōcem trementem habet quod poenam timet.",
+      "Corpus tremēns fessa erat et in terram cecidit.",
+      "Multitūdō hominum trementium ad templum fugit."
+    ]
+  },
+  "vos": {
+    "definition": "Vōs estis multī hominēs quibus ego loquor. Est nōmen prōnōmen quod significat plūs quam ūnum tē.",
+    "examples": [
+      "Vōs estis amīcī meī et vōs dīligō.",
+      "Magister vōbīs fābulam novam nārrat.",
+      "Quid vōs in forō hodiē vīdistis?",
+      "Pater vestra dōna ad vōs affert."
+    ]
+  },
+  "singulus": {
+    "definition": "Hoc verbum dīcit ūnum tantum esse. Nōn sunt multī, sed quisque per sē dēbet vīvidē dūcī.",
+    "examples": [
+      "Dux dōna singula virīs dat.",
+      "Singulī mīlitēs ē castrīs discēdunt.",
+      "Bovēs nōn cūnctī prōcēdunt, sed singulī."
+    ]
+  },
+  "sopitus": {
+    "definition": "Sōpītus est ille homō quī nōn vīget, sed in altō somnō iacet. Is quī sōpītus est nihil audit neque videt.",
+    "examples": [
+      "Puer fessus post labōrem longum sōpītus est.",
+      "Mēnsa et vīnum fēcērunt ut hospitēs sōpītī essent.",
+      "In altā nocte, nēmō in urbe sōpītā clāmat.",
+      "Sōpītī hominēs in lectīs iacent et quiēscunt."
+    ]
+  },
+  "sidonius": {
+    "definition": "Sidonius est homō quī ex urbe Phoenīciā venit. Hic vir in terrā prope mare habitat ubi multae nāvēs sunt.",
+    "examples": [
+      "Sidonius ad oram maris venit ut nāvem videat.",
+      "Līberī Sidoniōrum in magno oppidō lūdunt.",
+      "Dīdō rēgīna Sidonia dicit et populum suum regit.",
+      "Eī Sidoniī per aequora alta in patriam novam navigant."
+    ]
+  },
+  "vertere": {
+    "definition": "Vertere est rem vel hominem movēre ita ut in aliam partem spectat vel aliam viam petit.",
+    "examples": [
+      "Puer vultum ad matrem vertit.",
+      "Aenēas nāvēs ab Ītaliā ad Libyam vertēbat.",
+      "Inimīcī in fugam versī sunt et ex aciē abierunt.",
+      "Fortūna statum rērum saepe vertit."
+    ]
+  },
+  "sentire": {
+    "definition": "Sentīre est rēs animō vel corpore accipere. Homō sentit ubi rēs tangit vel ubi dolor in corpore est, et etiam sentit id quod in mente putat.",
+    "examples": [
+      "Puer ferrum ācre in pede sentīvit et statim flēvit.",
+      "Mārcus idem de bellō sentit quod amīcus eius.",
+      "Multōs dolōrēs in animō sentiēmus sī patria nostra ā mīlitibus dēlētur.",
+      "Vōs vērē sentītis vītam esse bonam et beatam."
+    ]
+  },
+  "Threissus": {
+    "definition": "Threissus est homō quī ex terrā Thracum venit. Threissī sunt barbarī et hominēs fortēs quī bellum amant.",
+    "examples": [
+      "Threissus sub arbore cum gladiō et armīs cōnsistit.",
+      "Mīlitēs Threissōs in aciē vidēmus.",
+      "Fēmina Threissa aquam ex flūmine ad domum portat."
+    ]
   }
 }

@@ -5,7 +5,7 @@ import logging
 import time
 from typing import Any
 
-from dolphindict.config import (
+from sharkreader.config import (
     DEFAULT_RETRY_ATTEMPTS,
     DEFAULT_RETRY_BASE_DELAY,
     GLOSS_MODEL,

@@ -848,16 +848,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "dolphindict"
-version = "0.1.0"
-dependencies = [
- "csv",
- "iced",
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "downcast-rs"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3142,6 +3132,16 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "sharkreader"
+version = "0.1.0"
+dependencies = [
+ "csv",
+ "iced",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

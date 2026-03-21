@@ -1,6 +1,6 @@
-# DolphinDict - Immersive Multi-Language Reader
+# SharkReader - Immersive Multi-Language Reader
 
-DolphinDict is an immersive reader for Latin and Ancient Greek that provides LLM-generated glosses restricted to core vocabulary. It combines a Rust/Iced GUI for the reading experience with a Python-based pipeline for text annotation and dictionary expansion.
+SharkReader is an immersive reader for Latin and Ancient Greek that provides LLM-generated glosses restricted to core vocabulary. It combines a Rust/Iced GUI for the reading experience with a Python-based pipeline for text annotation and dictionary expansion.
 
 ## Project Structure
 

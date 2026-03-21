@@ -2,7 +2,7 @@
 
 import pytest
 
-from dolphindict import config, glossgen
+from sharkreader import config, glossgen
 
 
 class TestValidateGlossResponse:

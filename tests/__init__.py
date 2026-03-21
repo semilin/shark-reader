@@ -1,1 +1,1 @@
-"""Tests for DolphinDict."""
+"""Tests for SharkReader."""

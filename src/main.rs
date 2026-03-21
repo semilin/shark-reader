@@ -6,6 +6,26 @@ use std::fmt;
 use std::fs::{self, File};
 use std::io::BufReader;
 
+const COLOR_BG: iced::Color = iced::Color::from_rgb(0.10, 0.10, 0.18);
+const COLOR_SURFACE: iced::Color = iced::Color::from_rgb(0.14, 0.14, 0.24);
+const COLOR_PRIMARY: iced::Color = iced::Color::from_rgb(0.30, 0.80, 0.77);
+const COLOR_PRIMARY_DARK: iced::Color = iced::Color::from_rgb(0.20, 0.60, 0.57);
+const COLOR_TEXT: iced::Color = iced::Color::from_rgb(0.95, 0.95, 0.97);
+const COLOR_TEXT_MUTED: iced::Color = iced::Color::from_rgb(0.65, 0.68, 0.75);
+
+fn bg_container<'a, T: 'a>(content: impl Into<Element<'a, T>>) -> Element<'a, T> {
+    container(content)
+        .width(Length::Fill)
+        .height(Length::Fill)
+        .center_x(Length::Fill)
+        .padding(40)
+        .style(|_| container::Style {
+            background: Some(iced::Background::Color(COLOR_BG)),
+            ..container::Style::default()
+        })
+        .into()
+}
+
 pub fn main() -> iced::Result {
     iced::application(DolphinDict::boot, DolphinDict::update, DolphinDict::view)
         .theme(DolphinDict::theme)
@@ -284,11 +304,16 @@ impl DolphinDict {
     }
 
     fn library_view(&self) -> Element<'_, Message> {
-        let title = text("DolphinDict Library").size(40);
+        let title = text("DolphinDict Library")
+            .size(36)
+            .style(|_| iced::widget::text::Style {
+                color: Some(COLOR_PRIMARY),
+            });
 
         let search_input = text_input("Search texts...", &self.search_query)
             .on_input(Message::SearchChanged)
-            .padding(10);
+            .padding(14)
+            .width(Length::Fixed(400.0));
 
         let filters = row![
             checkbox(self.filter_latin)
@@ -298,9 +323,9 @@ impl DolphinDict {
                 .label("Ancient Greek")
                 .on_toggle(Message::FilterGreekToggled),
         ]
-        .spacing(20);
+        .spacing(24);
 
-        let mut text_list = column![].spacing(10).width(Length::Fill);
+        let mut text_list = column![].spacing(16).width(Length::Fill);
 
         let filtered_texts = self.available_texts.iter().filter(|t| {
             let matches_search = t
@@ -321,17 +346,21 @@ impl DolphinDict {
             let item = button(
                 row![
                     column![
-                        text(&text_meta.title).size(18),
+                        text(&text_meta.title).size(20),
                         text(&text_meta.author)
                             .size(14)
                             .style(|_| iced::widget::text::Style {
-                                color: Some(iced::Color::from_rgb(0.7, 0.7, 0.7)),
+                                color: Some(COLOR_TEXT_MUTED),
                             }),
                     ]
                     .width(Length::Fill),
-                    text(format!("{}", text_meta.language)).size(14),
+                    text(format!("{}", text_meta.language)).size(12).style(|_| {
+                        iced::widget::text::Style {
+                            color: Some(COLOR_PRIMARY),
+                        }
+                    }),
                 ]
-                .padding(10)
+                .padding(16)
                 .align_y(Alignment::Center),
             )
             .on_press(Message::TextSelected(text_meta.clone()))
@@ -345,9 +374,9 @@ impl DolphinDict {
             button("Latin Glossary").on_press(Message::OpenGlossary(Language::Latin)),
             button("Greek Glossary").on_press(Message::OpenGlossary(Language::Greek)),
         ]
-        .spacing(20);
+        .spacing(24);
 
-        container(
+        bg_container(
             column![
                 title,
                 search_input,
@@ -355,15 +384,10 @@ impl DolphinDict {
                 scrollable(text_list).height(Length::Fill),
                 glossary_buttons
             ]
-            .spacing(20)
+            .spacing(24)
             .max_width(800.0)
             .align_x(Alignment::Center),
         )
-        .width(Length::Fill)
-        .height(Length::Fill)
-        .center_x(Length::Fill)
-        .padding(40)
-        .into()
     }
 
     fn reader_view<'a>(&'a self, meta: &'a TextMetadata) -> Element<'a, Message> {
@@ -383,7 +407,7 @@ impl DolphinDict {
             text(&meta.author)
                 .size(16)
                 .style(|_| iced::widget::text::Style {
-                    color: Some(iced::Color::from_rgb(0.7, 0.7, 0.7)),
+                    color: Some(COLOR_TEXT_MUTED),
                 }),
         ];
 
@@ -391,7 +415,7 @@ impl DolphinDict {
             .spacing(20)
             .align_y(Alignment::Center);
 
-        let mut reader_col = column![].spacing(10).width(Length::Fill);
+        let mut reader_col = column![].spacing(16).width(Length::Fill);
         let mut current_row_tokens = Vec::new();
         let mut line_number = 0;
 
@@ -401,9 +425,9 @@ impl DolphinDict {
                     let is_selected = self.selected_word.as_ref() == Some(l);
                     let has_gloss = dict.contains_key(l);
 
-                    let word_btn = button(text(w))
+                    let word_btn = button(text(w).size(18))
                         .on_press(Message::WordSelected(l.clone()))
-                        .padding(1)
+                        .padding(4)
                         .style(if is_selected {
                             button::primary
                         } else if has_gloss {
@@ -430,7 +454,7 @@ impl DolphinDict {
                         line_row = line_row.push(
                             container(text(num_str).size(12).style(|_| {
                                 iced::widget::text::Style {
-                                    color: Some(iced::Color::from_rgb(0.5, 0.5, 0.5)),
+                                    color: Some(COLOR_TEXT_MUTED),
                                 }
                             }))
                             .width(Length::Fixed(30.0))
@@ -461,7 +485,7 @@ impl DolphinDict {
                         text(w)
                             .size(12)
                             .style(|_| iced::widget::text::Style {
-                                color: Some(iced::Color::from_rgb(0.5, 0.5, 0.5)),
+                                color: Some(COLOR_TEXT_MUTED),
                             })
                             .into(),
                     );
@@ -473,7 +497,7 @@ impl DolphinDict {
             reader_col = reader_col.push(row(current_row_tokens).spacing(5).wrap());
         }
 
-        let main_reader = scrollable(container(reader_col).padding(20));
+        let main_reader = scrollable(container(reader_col).padding(32));
 
         let sidebar: Element<Message> = if let Some(selected) = &self.selected_word {
             let is_core = core_list.contains(&selected.to_lowercase());
@@ -496,7 +520,7 @@ impl DolphinDict {
                     text(frequency_str)
                         .size(14)
                         .style(|_: &Theme| iced::widget::text::Style {
-                            color: Some(iced::Color::from_rgb(0.6, 0.6, 0.6)),
+                            color: Some(COLOR_TEXT_MUTED),
                         })
                         .into()
                 } else {
@@ -505,13 +529,21 @@ impl DolphinDict {
 
                 scrollable(
                     column![
-                        text(format!("{}{}", selected, star)).size(30),
-                        text(&gloss.definition).size(16),
+                        text(format!("{}{}", selected, star)).size(32).style(|_| {
+                            iced::widget::text::Style {
+                                color: Some(COLOR_PRIMARY),
+                            }
+                        }),
+                        text(&gloss.definition).size(18),
                         freq_element,
-                        text("Examples:").size(18),
-                        column(examples_iter).spacing(10),
+                        text("Examples:")
+                            .size(16)
+                            .style(|_| iced::widget::text::Style {
+                                color: Some(COLOR_TEXT_MUTED)
+                            }),
+                        column(examples_iter).spacing(12),
                     ]
-                    .spacing(15),
+                    .spacing(20),
                 )
                 .into()
             } else if is_core {
@@ -519,7 +551,7 @@ impl DolphinDict {
                     text(frequency_str)
                         .size(14)
                         .style(|_: &Theme| iced::widget::text::Style {
-                            color: Some(iced::Color::from_rgb(0.6, 0.6, 0.6)),
+                            color: Some(COLOR_TEXT_MUTED),
                         })
                         .into()
                 } else {
@@ -540,7 +572,7 @@ impl DolphinDict {
                     text(frequency_str)
                         .size(14)
                         .style(|_: &Theme| iced::widget::text::Style {
-                            color: Some(iced::Color::from_rgb(0.6, 0.6, 0.6)),
+                            color: Some(COLOR_TEXT_MUTED),
                         })
                         .into()
                 } else {
@@ -563,16 +595,17 @@ impl DolphinDict {
                 .into()
         };
 
-        column![
-            header,
-            row![
-                main_reader.width(Length::Fill),
-                container(sidebar).width(Length::Fixed(300.0)).padding(10)
+        bg_container(
+            column![
+                header,
+                row![
+                    main_reader.width(Length::Fill),
+                    container(sidebar).width(Length::Fixed(350.0)).padding(24)
+                ]
+                .spacing(24)
             ]
-            .spacing(20)
-        ]
-        .padding(20)
-        .into()
+            .padding(24),
+        )
     }
 
     fn glossary_view(&self, lang: Language) -> Element<'_, Message> {
@@ -582,25 +615,31 @@ impl DolphinDict {
         };
 
         let back_btn = button("← Library").on_press(Message::BackToLibrary);
-        let title = text(format!("{} Glossary", lang)).size(30);
-        let header = row![back_btn, title].spacing(20).align_y(Alignment::Center);
+        let title =
+            text(format!("{} Glossary", lang))
+                .size(30)
+                .style(|_| iced::widget::text::Style {
+                    color: Some(COLOR_PRIMARY),
+                });
+        let header = row![back_btn, title].spacing(24).align_y(Alignment::Center);
 
         let search_input = text_input("Search words...", &self.search_query)
             .on_input(Message::SearchChanged)
-            .padding(10);
+            .padding(14);
 
         let filtered_words = dict.keys().filter(|word| {
             word.to_lowercase()
                 .contains(&self.search_query.to_lowercase())
         });
 
-        let mut word_list = column![].spacing(5).width(Length::Fixed(250.0));
+        let mut word_list = column![].spacing(8).width(Length::Fixed(280.0));
         for word in filtered_words {
             let is_selected = self.selected_word.as_ref() == Some(word);
             word_list = word_list.push(
-                button(text(word))
+                button(text(word).size(16))
                     .on_press(Message::WordSelected(word.clone()))
                     .width(Length::Fill)
+                    .padding(12)
                     .style(if is_selected {
                         button::primary
                     } else {
@@ -614,32 +653,47 @@ impl DolphinDict {
                 let examples_iter = gloss
                     .examples
                     .iter()
-                    .map(|ex| text(format!("• {}", ex)).into());
+                    .map(|ex| text(format!("• {}", ex)).size(16))
+                    .map(|t| t.into());
                 column![
-                    text(selected).size(40),
+                    text(selected)
+                        .size(36)
+                        .style(|_| iced::widget::text::Style {
+                            color: Some(COLOR_PRIMARY)
+                        }),
                     text(&gloss.definition).size(20),
-                    text("Examples:").size(25),
-                    scrollable(column(examples_iter).spacing(10)),
+                    text("Examples:")
+                        .size(18)
+                        .style(|_| iced::widget::text::Style {
+                            color: Some(COLOR_TEXT_MUTED)
+                        }),
+                    scrollable(column(examples_iter).spacing(12)),
                 ]
-                .spacing(20)
+                .spacing(24)
                 .into()
             } else {
-                text("Select a word").into()
+                text("Select a word").size(18).into()
             }
         } else {
-            text("Select a word to view its gloss").into()
+            text("Select a word to view its gloss")
+                .size(18)
+                .style(|_| iced::widget::text::Style {
+                    color: Some(COLOR_TEXT_MUTED),
+                })
+                .into()
         };
 
-        column![
-            header,
-            search_input,
-            row![
-                scrollable(container(word_list).padding(5)),
-                container(content).padding(20).width(Length::Fill)
+        bg_container(
+            column![
+                header,
+                search_input,
+                row![
+                    scrollable(container(word_list).padding(8)),
+                    container(content).padding(32).width(Length::Fill)
+                ]
+                .spacing(24)
             ]
-            .spacing(20)
-        ]
-        .padding(20)
-        .into()
+            .padding(32),
+        )
     }
 }
