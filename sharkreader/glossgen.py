@@ -14,9 +14,19 @@ from sharkreader.config import (
 
 logger = logging.getLogger(__name__)
 
+# Timeout for API calls in seconds
+API_TIMEOUT = 60.0
+
 
 class GlossGenerationError(Exception):
     """Raised when gloss generation fails after all retries."""
+
+    pass
+
+
+class GlossGenerationTimeout(GlossGenerationError):
+    """Raised when gloss generation times out."""
+
     pass
 
 
@@ -29,50 +39,55 @@ def query_llm_with_retry(
 ) -> dict[str, Any]:
     """Query the LLM with exponential backoff retry logic."""
     from openai import BadRequestError, RateLimitError
-    
+
     last_error: Exception | None = None
-    
+
     for attempt in range(max_attempts):
         try:
             response = client.chat.completions.create(
                 model=model,
                 messages=[{"role": "user", "content": prompt}],
-                response_format={"type": "json_object"}
+                response_format={"type": "json_object"},
+                timeout=API_TIMEOUT,
             )
             content = response.choices[0].message.content
-            
+
             try:
                 return json.loads(content)
             except json.JSONDecodeError as e:
-                logger.warning(f"Attempt {attempt + 1}: Invalid JSON response, retrying...")
+                logger.warning(
+                    f"Attempt {attempt + 1}: Invalid JSON response, retrying..."
+                )
                 last_error = e
                 if attempt < max_attempts - 1:
-                    time.sleep(base_delay * (2 ** attempt))
+                    time.sleep(base_delay * (2**attempt))
                     continue
                 raise GlossGenerationError(
                     f"Invalid JSON response after {max_attempts} attempts"
                 ) from e
-                
+
         except RateLimitError as e:
             logger.warning(f"Attempt {attempt + 1}: Rate limited, retrying...")
             last_error = e
             if attempt < max_attempts - 1:
-                delay = base_delay * (2 ** attempt)
+                delay = base_delay * (2**attempt)
                 time.sleep(delay)
                 continue
-                
-        except BadRequestError as e:
-            logger.error(f"Bad request: {e}")
-            raise GlossGenerationError(f"Bad request: {e}") from e
-            
+
         except Exception as e:
-            logger.warning(f"Attempt {attempt + 1}: Error {type(e).__name__}: {e}")
-            last_error = e
+            error_str = str(e).lower()
+            if "timeout" in error_str or "timed out" in error_str:
+                logger.warning(f"Attempt {attempt + 1}: Request timed out, retrying...")
+                last_error = GlossGenerationTimeout(f"Request timed out: {e}")
+            else:
+                logger.warning(f"Attempt {attempt + 1}: Error {type(e).__name__}: {e}")
+                last_error = e
+
             if attempt < max_attempts - 1:
-                delay = base_delay * (2 ** attempt)
+                delay = base_delay * (2**attempt)
                 time.sleep(delay)
                 continue
-    
+
     raise GlossGenerationError(
         f"Failed after {max_attempts} attempts: {last_error}"
     ) from last_error
@@ -84,16 +99,16 @@ def validate_gloss_response(response: Any) -> dict[str, Any]:
         raise GlossGenerationError(
             f"Expected dict response, got {type(response).__name__}"
         )
-    
+
     if "definition" not in response:
         raise GlossGenerationError("Missing 'definition' field in response")
-    
+
     if "examples" not in response:
         raise GlossGenerationError("Missing 'examples' field in response")
-    
+
     if not isinstance(response["examples"], list):
         raise GlossGenerationError("'examples' must be a list")
-    
+
     return {
         "definition": str(response["definition"]),
         "examples": [str(ex) for ex in response["examples"]],
@@ -108,7 +123,7 @@ def generate_gloss(
 ) -> dict[str, Any]:
     """Generate an immersive gloss for a word using core vocabulary."""
     vocab_str = "\n".join(vocab_list)
-    
+
     prompt = (
         f"# CORE VOCABULARY\n{vocab_str}\n"
         f"# DIRECTIONS\nGenerate an immersive {config.name} gloss for the given {config.name} word. "
@@ -118,6 +133,6 @@ def generate_gloss(
         f'For example, if the word were "{config.example_word}", respond with {config.example_response}.\n'
         f"The word is: {word}."
     )
-    
+
     response = query_llm_with_retry(prompt, GLOSS_MODEL, client)
     return validate_gloss_response(response)

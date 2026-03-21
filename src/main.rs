@@ -13,6 +13,127 @@ const COLOR_PRIMARY_DARK: iced::Color = iced::Color::from_rgb(0.20, 0.60, 0.57);
 const COLOR_TEXT: iced::Color = iced::Color::from_rgb(0.95, 0.95, 0.97);
 const COLOR_TEXT_MUTED: iced::Color = iced::Color::from_rgb(0.65, 0.68, 0.75);
 
+fn teal_button(_theme: &iced::Theme, _status: iced::widget::button::Status) -> button::Style {
+    button::Style {
+        background: Some(iced::Background::Color(COLOR_PRIMARY)),
+        border: iced::Border::default(),
+        text_color: COLOR_BG,
+        ..Default::default()
+    }
+}
+
+fn bordered_button(_theme: &iced::Theme, _status: iced::widget::button::Status) -> button::Style {
+    button::Style {
+        background: Some(iced::Background::Color(COLOR_SURFACE)),
+        border: iced::Border {
+            width: 2.0,
+            color: COLOR_PRIMARY,
+            radius: 8.0.into(),
+            ..Default::default()
+        },
+        text_color: COLOR_TEXT,
+        ..Default::default()
+    }
+}
+
+fn selected_word_button(
+    _theme: &iced::Theme,
+    _status: iced::widget::button::Status,
+) -> button::Style {
+    button::Style {
+        background: Some(iced::Background::Color(COLOR_BG)),
+        border: iced::Border {
+            width: 2.0,
+            color: COLOR_PRIMARY,
+            radius: 4.0.into(),
+            ..Default::default()
+        },
+        text_color: COLOR_TEXT,
+        ..Default::default()
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum InterfaceLang {
+    English,
+    Latin,
+    Greek,
+}
+
+impl InterfaceLang {
+    fn next(self) -> Self {
+        match self {
+            InterfaceLang::English => InterfaceLang::Latin,
+            InterfaceLang::Latin => InterfaceLang::Greek,
+            InterfaceLang::Greek => InterfaceLang::English,
+        }
+    }
+
+    fn to_language(self) -> Option<Language> {
+        match self {
+            InterfaceLang::English => None,
+            InterfaceLang::Latin => Some(Language::Latin),
+            InterfaceLang::Greek => Some(Language::Greek),
+        }
+    }
+}
+
+struct Translations {
+    library_title: (&'static str, &'static str, &'static str),
+    search_texts: (&'static str, &'static str, &'static str),
+    click_word: (&'static str, &'static str, &'static str),
+    glossary: (&'static str, &'static str, &'static str),
+    search_words: (&'static str, &'static str, &'static str),
+    back_to_library: (&'static str, &'static str, &'static str),
+    core_vocabulary: (&'static str, &'static str, &'static str),
+    no_gloss: (&'static str, &'static str, &'static str),
+    examples: (&'static str, &'static str, &'static str),
+    select_word: (&'static str, &'static str, &'static str),
+    select_word_detail: (&'static str, &'static str, &'static str),
+}
+
+fn t(tuple: &(&'static str, &'static str, &'static str), lang: InterfaceLang) -> &'static str {
+    match lang {
+        InterfaceLang::English => tuple.0,
+        InterfaceLang::Latin => tuple.1,
+        InterfaceLang::Greek => tuple.2,
+    }
+}
+
+static TRANSLATIONS: Translations = Translations {
+    library_title: ("Library", "Bibliothēca", "Βιβλιοθήκη"),
+    search_texts: (
+        "Search texts...",
+        "Textūs quaere...",
+        "Ζήτει συγγράμματα...",
+    ),
+    click_word: (
+        "Click a word to see its gloss",
+        "Verbum tange ut interpretātiōnem videās",
+        "Ἅψαι λέξεως ἵνα τὴν ἐξήγησιν ἴδῃς",
+    ),
+    glossary: ("Glossary", "Glossarium", "Γλωσσάριον"),
+    search_words: ("Search words...", "Verba quaere...", "Ζήτει λέξεις..."),
+    back_to_library: ("← Library", "← Bibliothēca", "← Βιβλιοθήκη"),
+    core_vocabulary: (
+        "Core vocabulary",
+        "Vocābulārium commune",
+        "Κοινὸν λεξιλόγιον",
+    ),
+    no_gloss: (
+        "No gloss available",
+        "Nulla interpretātiō",
+        "Οὐκ ἔστιν ἐξήγησις",
+    ),
+    examples: ("Examples:", "Exempla:", "Παραδείγματα:"),
+    select_word: ("Select a word", "Verbum ēlige", "Ἐπέλεξον λέξιν"),
+    select_word_detail: (
+        "Select a word to view its gloss",
+        "Verbum ēlige ut interpretātiōnem videās",
+        "Ἐπέλεξον λέξιν ἵνα τὴν ἐξήγησιν ἴδῃς",
+    ),
+};
+
 fn bg_container<'a, T: 'a>(content: impl Into<Element<'a, T>>) -> Element<'a, T> {
     container(content)
         .width(Length::Fill)
@@ -64,8 +185,8 @@ enum Language {
 impl fmt::Display for Language {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Language::Latin => write!(f, "Latin"),
-            Language::Greek => write!(f, "Ancient Greek"),
+            Language::Latin => write!(f, "Latīnē"),
+            Language::Greek => write!(f, "Ἑλληνιστί"),
         }
     }
 }
@@ -113,8 +234,7 @@ struct DolphinDict {
 
     // UI State
     search_query: String,
-    filter_latin: bool,
-    filter_greek: bool,
+    interface_lang: InterfaceLang,
 
     // Reader State
     selected_word: Option<String>,
@@ -125,8 +245,7 @@ struct DolphinDict {
 #[derive(Debug, Clone)]
 enum Message {
     SearchChanged(String),
-    FilterLatinToggled(bool),
-    FilterGreekToggled(bool),
+    ToggleInterfaceLang,
     TextSelected(TextMetadata),
     BackToLibrary,
     OpenGlossary(Language),
@@ -171,8 +290,7 @@ impl Default for DolphinDict {
             greek_core,
             available_texts,
             search_query: String::new(),
-            filter_latin: true,
-            filter_greek: true,
+            interface_lang: InterfaceLang::English,
             selected_word: None,
             reader_tokens: Vec::new(),
             lemma_frequencies: BTreeMap::new(),
@@ -260,11 +378,8 @@ impl DolphinDict {
             Message::SearchChanged(query) => {
                 self.search_query = query;
             }
-            Message::FilterLatinToggled(on) => {
-                self.filter_latin = on;
-            }
-            Message::FilterGreekToggled(on) => {
-                self.filter_greek = on;
+            Message::ToggleInterfaceLang => {
+                self.interface_lang = self.interface_lang.next();
             }
             Message::TextSelected(text_meta) => {
                 let (meta, tokens, frequencies) = load_annotated_text(&text_meta.path);
@@ -304,28 +419,34 @@ impl DolphinDict {
     }
 
     fn library_view(&self) -> Element<'_, Message> {
-        let title = text("DolphinDict Library")
+        let lang_label = match self.interface_lang {
+            InterfaceLang::English => "English",
+            InterfaceLang::Latin => "Latīnē",
+            InterfaceLang::Greek => "Ἑλληνιστί",
+        };
+
+        let title = text(t(&TRANSLATIONS.library_title, self.interface_lang))
             .size(36)
             .style(|_| iced::widget::text::Style {
                 color: Some(COLOR_PRIMARY),
             });
 
-        let search_input = text_input("Search texts...", &self.search_query)
-            .on_input(Message::SearchChanged)
-            .padding(14)
-            .width(Length::Fixed(400.0));
+        let search_input = text_input(
+            t(&TRANSLATIONS.search_texts, self.interface_lang),
+            &self.search_query,
+        )
+        .on_input(Message::SearchChanged)
+        .padding(14)
+        .width(Length::Fixed(400.0));
 
-        let filters = row![
-            checkbox(self.filter_latin)
-                .label("Latin")
-                .on_toggle(Message::FilterLatinToggled),
-            checkbox(self.filter_greek)
-                .label("Ancient Greek")
-                .on_toggle(Message::FilterGreekToggled),
-        ]
-        .spacing(24);
+        let lang_toggle = button(text(lang_label).size(14))
+            .on_press(Message::ToggleInterfaceLang)
+            .padding(12)
+            .style(teal_button);
 
         let mut text_list = column![].spacing(16).width(Length::Fill);
+
+        let target_lang = self.interface_lang.to_language();
 
         let filtered_texts = self.available_texts.iter().filter(|t| {
             let matches_search = t
@@ -335,10 +456,7 @@ impl DolphinDict {
                 || t.author
                     .to_lowercase()
                     .contains(&self.search_query.to_lowercase());
-            let matches_lang = match t.language {
-                Language::Latin => self.filter_latin,
-                Language::Greek => self.filter_greek,
-            };
+            let matches_lang = target_lang.map_or(true, |lang| t.language == lang);
             matches_search && matches_lang
         });
 
@@ -365,24 +483,38 @@ impl DolphinDict {
             )
             .on_press(Message::TextSelected(text_meta.clone()))
             .width(Length::Fill)
-            .style(button::secondary);
+            .style(bordered_button);
 
             text_list = text_list.push(item);
         }
 
-        let glossary_buttons = row![
-            button("Latin Glossary").on_press(Message::OpenGlossary(Language::Latin)),
-            button("Greek Glossary").on_press(Message::OpenGlossary(Language::Greek)),
-        ]
-        .spacing(24);
+        let glossary_buttons: Element<'_, Message> = match self.interface_lang {
+            InterfaceLang::English => row![
+                button("Latin Glossary")
+                    .on_press(Message::OpenGlossary(Language::Latin))
+                    .style(teal_button),
+                button("Greek Glossary")
+                    .on_press(Message::OpenGlossary(Language::Greek))
+                    .style(teal_button),
+            ]
+            .spacing(24)
+            .into(),
+            InterfaceLang::Latin => button(text(t(&TRANSLATIONS.glossary, InterfaceLang::Latin)))
+                .on_press(Message::OpenGlossary(Language::Latin))
+                .style(teal_button)
+                .into(),
+            InterfaceLang::Greek => button(text(t(&TRANSLATIONS.glossary, InterfaceLang::Greek)))
+                .on_press(Message::OpenGlossary(Language::Greek))
+                .style(teal_button)
+                .into(),
+        };
 
         bg_container(
             column![
                 title,
-                search_input,
-                filters,
+                row![search_input, lang_toggle].spacing(16),
                 scrollable(text_list).height(Length::Fill),
-                glossary_buttons
+                glossary_buttons,
             ]
             .spacing(24)
             .max_width(800.0)
@@ -401,7 +533,9 @@ impl DolphinDict {
             Language::Greek => &self.greek_core,
         };
 
-        let back_btn = button("← Library").on_press(Message::BackToLibrary);
+        let back_btn = button(t(&TRANSLATIONS.back_to_library, self.interface_lang))
+            .on_press(Message::BackToLibrary)
+            .style(teal_button);
         let header_text = column![
             text(&meta.title).size(24),
             text(&meta.author)
@@ -429,9 +563,7 @@ impl DolphinDict {
                         .on_press(Message::WordSelected(l.clone()))
                         .padding(4)
                         .style(if is_selected {
-                            button::primary
-                        } else if has_gloss {
-                            button::text
+                            selected_word_button
                         } else {
                             button::text
                         });
@@ -536,7 +668,7 @@ impl DolphinDict {
                         }),
                         text(&gloss.definition).size(18),
                         freq_element,
-                        text("Examples:")
+                        text(t(&TRANSLATIONS.examples, self.interface_lang))
                             .size(16)
                             .style(|_| iced::widget::text::Style {
                                 color: Some(COLOR_TEXT_MUTED)
@@ -561,7 +693,7 @@ impl DolphinDict {
                 scrollable(
                     column![
                         text(format!("{}{}", selected, star)).size(30),
-                        text("Core vocabulary").size(16),
+                        text(t(&TRANSLATIONS.core_vocabulary, self.interface_lang)).size(16),
                         freq_element,
                     ]
                     .spacing(15),
@@ -582,7 +714,7 @@ impl DolphinDict {
                 scrollable(
                     column![
                         text(selected).size(30),
-                        text("No gloss available").size(16),
+                        text(t(&TRANSLATIONS.no_gloss, self.interface_lang)).size(16),
                         freq_element,
                     ]
                     .spacing(15),
@@ -590,7 +722,7 @@ impl DolphinDict {
                 .into()
             }
         } else {
-            container(text("Click a word to see its gloss"))
+            container(text(t(&TRANSLATIONS.click_word, self.interface_lang)))
                 .padding(10)
                 .into()
         };
@@ -614,18 +746,25 @@ impl DolphinDict {
             Language::Greek => &self.greek_dict,
         };
 
-        let back_btn = button("← Library").on_press(Message::BackToLibrary);
-        let title =
-            text(format!("{} Glossary", lang))
-                .size(30)
-                .style(|_| iced::widget::text::Style {
-                    color: Some(COLOR_PRIMARY),
-                });
+        let back_btn = button(t(&TRANSLATIONS.back_to_library, self.interface_lang))
+            .on_press(Message::BackToLibrary)
+            .style(teal_button);
+        let title = text(format!(
+            "{}",
+            t(&TRANSLATIONS.glossary, self.interface_lang)
+        ))
+        .size(30)
+        .style(|_| iced::widget::text::Style {
+            color: Some(COLOR_PRIMARY),
+        });
         let header = row![back_btn, title].spacing(24).align_y(Alignment::Center);
 
-        let search_input = text_input("Search words...", &self.search_query)
-            .on_input(Message::SearchChanged)
-            .padding(14);
+        let search_input = text_input(
+            t(&TRANSLATIONS.search_words, self.interface_lang),
+            &self.search_query,
+        )
+        .on_input(Message::SearchChanged)
+        .padding(14);
 
         let filtered_words = dict.keys().filter(|word| {
             word.to_lowercase()
@@ -641,9 +780,9 @@ impl DolphinDict {
                     .width(Length::Fill)
                     .padding(12)
                     .style(if is_selected {
-                        button::primary
+                        selected_word_button
                     } else {
-                        button::secondary
+                        bordered_button
                     }),
             );
         }
@@ -662,7 +801,7 @@ impl DolphinDict {
                             color: Some(COLOR_PRIMARY)
                         }),
                     text(&gloss.definition).size(20),
-                    text("Examples:")
+                    text(t(&TRANSLATIONS.examples, self.interface_lang))
                         .size(18)
                         .style(|_| iced::widget::text::Style {
                             color: Some(COLOR_TEXT_MUTED)
@@ -672,10 +811,12 @@ impl DolphinDict {
                 .spacing(24)
                 .into()
             } else {
-                text("Select a word").size(18).into()
+                text(t(&TRANSLATIONS.select_word, self.interface_lang))
+                    .size(18)
+                    .into()
             }
         } else {
-            text("Select a word to view its gloss")
+            text(t(&TRANSLATIONS.select_word_detail, self.interface_lang))
                 .size(18)
                 .style(|_| iced::widget::text::Style {
                     color: Some(COLOR_TEXT_MUTED),

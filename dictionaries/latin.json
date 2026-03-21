@@ -9418,14 +9418,6 @@
       "Nauta ab ōrā discēdit et in altum mare fertur."
     ]
   },
-  "'": {
-    "definition": "Pūnctus vel locus nōn māgnus, quī rē vērā rēs ipsa minima est. Hoc verbum significat rem quae in ratiōne vel in locō parva movētur.",
-    "examples": [
-      "In hāc chartā ūnus pūnctus est.",
-      "Mīles pūnctum in tēlō suō videt.",
-      "Puerī multa pūncta in mūrō fēcērunt."
-    ]
-  },
   "Acidalia": {
     "definition": "Nōmen est deae Veneris, quae est māter Amōris et uxor deī Ignis. Haec dea fōrmam pulchram habet et ab omnibus amātur.",
     "examples": [
@@ -15422,6 +15414,457 @@
       "Threissus sub arbore cum gladiō et armīs cōnsistit.",
       "Mīlitēs Threissōs in aciē vidēmus.",
       "Fēmina Threissa aquam ex flūmine ad domum portat."
+    ]
+  },
+  "breviter": {
+    "definition": "Breviter dīcitur cum homō nōn diū loquitur aut paucīs verbīs ūtitur.",
+    "examples": [
+      "Iūdex vult tē breviter loquī dē culpā.",
+      "Breviter dīcō: vīta est bona.",
+      "Puer breviter respondit et deinde abiit."
+    ]
+  },
+  "et": {
+    "definition": "Hac rē multae rēs vel hominēs iunguntur. Haec rēs est similis verbō atque.",
+    "examples": [
+      "Puer et puella in agrō ambulant.",
+      "Marcus aquam et vīnum bibit.",
+      "Aenēas arma et virum canit."
+    ]
+  },
+  "centum": {
+    "definition": "Centum est numerus māgnus. Decem et decem et decem sunt trīgintā, sed decem deciēns sunt centum.",
+    "examples": [
+      "Centum mīlitēs in castrīs manent.",
+      "Habetne ille vir centum bovēs in agrō?",
+      "Post centum annōs nēmō vīvit."
+    ]
+  },
+  "at": {
+    "definition": "Hoc verbum contrā rēs prius dictās dīcit. Simile est verbīs 'sed' et 'autem', sed vim habet mātūram.",
+    "examples": [
+      "Puer ad urbem nōn vēnit, at ego eō īvī.",
+      "Tū mē vocās, at ego taceō.",
+      "Mors mē terret, at spēs mea est magna."
+    ]
+  },
+  "atque": {
+    "definition": "Hoc verbum rēs vel hominēs inter sē coniungit. Significat idem quod 'et' vel 'ac'.",
+    "examples": [
+      "Puer atque puella in agrīs currunt.",
+      "Marcus gladium atque arma capit.",
+      "Dux fortis est atque bonus.",
+      "Tū atque ego amīcī fīlīī sumus."
+    ]
+  },
+  "aliter": {
+    "definition": "Aliter dīcit rem nōn eōdem modō fierī. Sī rēs nōn ita est, sed aliō modō, aliter est.",
+    "examples": [
+      "Marcus aliter sentit quam amīcus eius.",
+      "Sī aliter faciēs, poenam dabis.",
+      "Hoc iter tūtum nōn est; aliter īre dēbēmus."
+    ]
+  },
+  "iam": {
+    "definition": "Hoc verbum significat rem nunc esse vel ad hoc tempus esse factam. Etiam dīcitur ubi rēs incipit vel dēsinit.",
+    "examples": [
+      "Iam magister venit et puerī tacent.",
+      "Fēmina fessa ab agrīs iam ad urbem rediit.",
+      "Rēx dīxit: 'Satis est, iam mē nōn movēbō.'"
+    ]
+  },
+  "ac": {
+    "definition": "Hoc verbum rēs vel hominēs coniungit. Sīcut 'et' vel 'atque' rēs ad alterās rēs addit.",
+    "examples": [
+      "Marcus ac Quīntus in hortō ambulant.",
+      "Puerī vōcem mātrem ac patrem audiunt.",
+      "Mīles gladium ac pīlum tenet."
+    ]
+  },
+  "ante": {
+    "definition": "Ante est locus vel tempus quod est contra post. Sī rēs ante hominem est, homō rem videt.",
+    "examples": [
+      "Servus ante dominum stat.",
+      "Puer ad forum ante patrem venit.",
+      "Ante bellum homines in pace vīvēbant.",
+      "Paucae hōrae ante noctem manent."
+    ]
+  },
+  "enim": {
+    "definition": "Enim est verbum quod causam dīcit. In prīmā parte sententiae rēs vidētur, deinde per hoc verbum ratiō rēī ostenditur.",
+    "examples": [
+      "Puer aquam bibit; sitit enim.",
+      "Mārcus nōn venit; aeger enim est.",
+      "Hominēs deōs colunt; hī enim vītam dant."
+    ]
+  },
+  "dum": {
+    "definition": "Dum est tempus in quō duae rēs simul fīunt. Significat ūnam rem agī in eōdem tempore in quō altera rēs agitur.",
+    "examples": [
+      "Dum puerī in silvā currunt, puellae in vīā rīdent.",
+      "Expectā mē hīc, dum redibō.",
+      "Dum vīvimus, amīcōs amāre dēbēmus."
+    ]
+  },
+  "aut": {
+    "definition": "Hoc verbum nōn dat duās rēs simul; dat ūnam rem vel alteram rem.",
+    "examples": [
+      "Hic homō aut amīcus aut hostis est.",
+      "Aut tū mēcum veniēs, aut ego sōlus abībō.",
+      "Puer dōnum accipiet aut ā patre aut ā mātre.",
+      "Vīnum aut aquam hodiē bibere volō."
+    ]
+  },
+  "forte": {
+    "definition": "Forte est rēs quae accidit sine cōnsiliō hominum. Sī rēs fortūna venit, nōn certō prōvidētur, tum dīcitur forte fierī.",
+    "examples": [
+      "Forte accidit ut amīcus meus ad vīcum venīret.",
+      "Sī forte hostibus occurris, timēre nōn dēbēs.",
+      "Ego et pater sub arbore forte sedēbāmus."
+    ]
+  },
+  "inde": {
+    "definition": "Hoc verbum significat 'ex illō locō'. Est contrā verbum 'hūc' vel 'ad hunc locum'.",
+    "examples": [
+      "Puer ex urbe vēnit et inde ad amīcum iit.",
+      "Mīlitēs ad castra prōcēdunt et inde hostēs vincunt.",
+      "Locus nōtus erat; inde vōx clāra audīta est."
+    ]
+  },
+  "bene": {
+    "definition": "Bene est rēs bona vel rēctus modus. Sī homō rēs bene agit, omnēs eum laudant.",
+    "examples": [
+      "Puer bonus bene scrībit et magistrum audit.",
+      "Māter fīlium amat, nam rēs bene fēcit.",
+      "Sī vīta est bona, nōs bene vīvimus."
+    ]
+  },
+  "ad": {
+    "definition": "Ad est verbum quod dīcit quō aut ad quem locum homō vel rēs it. Hoc verbum quoque docet quālis sit fīnis in temporet.",
+    "examples": [
+      "Puer ad urbem magnā cum celeritāte currit.",
+      "Lēgātus ad rēgem venit et dōna dōnat.",
+      "Ad multam noctem in forō cum amīcīs manēmus.",
+      "Puella ad matrem suam respicit."
+    ]
+  },
+  "etiam": {
+    "definition": "Etiam indicat rem addī ad aliam rem, vel rem plūris esse quam rē vērā vidētur. Hoc verbum dīcit 'quoque' vel 'adhūc'.",
+    "examples": [
+      "Puer librōs legit, etiam puella lūdere vult.",
+      "Nōn sōlum amīcus meus adest, sed etiam pater venit.",
+      "Hodiē sōl lūcet, sed etiam herī sōl clārus erat.",
+      "Rēx validus est, sed etiam sapientiam magnam habet."
+    ]
+  },
+  "haud": {
+    "definition": "Haud est paene idem quod nōn, sed magis dē rebus dīcitur quās homō nēgat vel contrā dīcit.",
+    "examples": [
+      "Haud stultus est ille homō, sed sapiēns.",
+      "Haud procul ab urbe est parvus ager.",
+      "Puella dīxit sē haud laetam esse."
+    ]
+  },
+  "in": {
+    "definition": "In est verbum quod locum vel quō rēs movētur dēmōnstrat. Hoc verbum dīcit ubi homō est vel ad quem locum rēs it.",
+    "examples": [
+      "Puer fessus in terrā sedet.",
+      "Mīles gladium in hostem mittit.",
+      "In magnā urbe multī hominēs vīvunt.",
+      "Marcus in templum venit et deum videt."
+    ]
+  },
+  "an": {
+    "definition": "Hoc verbum in interrogātiōne pōnitur quae duās partēs habet. Significat 'utrum hoc sit... quōmodo illud'.",
+    "examples": [
+      "Servus meus es an līber homō?",
+      "Utrum mihi gladium dās an aurum?",
+      "Venīs ad urbem an in villā manēs?"
+    ]
+  },
+  "quantum": {
+    "definition": "Quantum est nōmen quod dīcit quam māgna rēs est. Hoc verbum indicat numerum vel pondus rēī.",
+    "examples": [
+      "Quantum argentī in tabernā est?",
+      "Quanta est fāma tua in hāc terrā?",
+      "Tantum dōnum dō, quantum dēbeō."
+    ]
+  },
+  "inter": {
+    "definition": "Inter est vocabulum quod dīcit locum medium in duōbus rēbus vel in multīs hominibus.",
+    "examples": [
+      "Puer sedet inter patrem et mātrem.",
+      "Inter senātōrēs erat magna contentiō.",
+      "Via longa inter urbēs dūcit."
+    ]
+  },
+  "prope": {
+    "definition": "Hic locus nōn longē abest. Est spatium breve inter duās rēs aut duōs hominēs.",
+    "examples": [
+      "Oppidum prope mare est.",
+      "Marcus prope amīcum suum sedet.",
+      "Puella prope aquam ambulāre nōn audet.",
+      "Hostēs ad castra propius accēdunt."
+    ]
+  },
+  "nec": {
+    "definition": "Nec est idem quod et nōn. Hoc verbum duās rēs vel sententiās iungit quārum neutra est vēra.",
+    "examples": [
+      "Puer nec multum cibum nec vīnum cupit.",
+      "Marcus nōn dīcit nec rīdet.",
+      "Bōnī cīvēs nec legēs frangunt nec bellum amant."
+    ]
+  },
+  "post": {
+    "definition": "Post est vocabulum quod dīcit aliquid tempore vel locō sequī. Significat post tergum vel tempore claudō.",
+    "examples": [
+      "Post bellum alta pāx in patriā erat.",
+      "Puer post mātrem suam sequitur.",
+      "Post paucōs diēs amīcus meus ad urbem advenit.",
+      "Pōne tē post mē."
+    ]
+  },
+  "saepe": {
+    "definition": "Saepe significat rēs vel factum nōn semel sed multīs temporibus fierī.",
+    "examples": [
+      "Marcus ad amīcum saepe advenit quoniam eum amat.",
+      "Puerī saepius in viā lūdunt et clāmant.",
+      "In Italiā rēs bonae saepe accidunt."
+    ]
+  },
+  "per": {
+    "definition": "Hoc verbum significat rēs vel hominēs ab ūnō locō ad alterum locum per medium īre vel movēre.",
+    "examples": [
+      "Nūntius per silvam ad urbem properat.",
+      "Aqua per terris in aequor fluere videtur.",
+      "Per multōs annōs amīcī in pāce vīvēbant.",
+      "Hostēs tēla per aurās mittunt."
+    ]
+  },
+  "postquam": {
+    "definition": "Postquam est verbum quod dīcit aliquid factum esse post tempus aliēnum. Hoc verbum duo tempora coniungit.",
+    "examples": [
+      "Postquam Caesar hostēs vīcit, ad urbem rediit.",
+      "Postquam fēmina verba dīxit, vir rīsit.",
+      "Līberī dormiunt postquam cibum cōnsūmpsērunt."
+    ]
+  },
+  "quoque": {
+    "definition": "Hōc verbum dicitur cum duae rēs vel duo hominēs sunt similēs. Significat 'item' vel 'etiam'.",
+    "examples": [
+      "Marcus ad forum it; Iūlia quoque cum eō it.",
+      "Nōn sōlum virī, sed multae fēminae quoque ibi fuerunt.",
+      "Puer librōs lēgit et epistulās quoque scrīpsit."
+    ]
+  },
+  "modo": {
+    "definition": "Hoc verbum significat tantum vel nūper. Aliquandō ad tempus pertinet, aliquandō ad numerum parvam rērum.",
+    "examples": [
+      "Modō ad urbem adveniō et fessus sum.",
+      "Nōn tōtum frūmentum, sed modo partem dō.",
+      "Hoc nōn semper faciō, sed modo hodiē."
+    ]
+  },
+  "licet": {
+    "definition": "Hoc verbum significat rem fierī posse vel hominem rem facere sinere. Quod licet, nōn prohibētur.",
+    "examples": [
+      "Tibi exīre ex urbe licet.",
+      "Mīlitī arma capere licuit ut patriam dēfenderet.",
+      "Licetne nōbīs in aedibus rēgis manēre?",
+      "Puerō legere librum licēbit ubi magister vēnerit."
+    ]
+  },
+  "magis": {
+    "definition": "Magis dīcit rēs plūs esse vel melius esse quam aliae rēs. Hoc verbum comparat duās rēs inter sē.",
+    "examples": [
+      "Hic puer magis fortis est quam amīcus eius.",
+      "Tū magis rīdēs, ego autem magis fleō.",
+      "Amor patris magis mē iuvat quam aurum.",
+      "Nunc magis audiō vōcem tuam quam anteā."
+    ]
+  },
+  "quondam": {
+    "definition": "Hoc verbum significat tempus quod ante hanc horam fuit. Id quod factum est aut erat in temporibus antīquīs quondam dīcitur.",
+    "examples": [
+      "Quondam rēx magnus in hāc terrā vīvēbat.",
+      "Rōma, quae quondam parva erat, orbis domina facta est.",
+      "Amīcī quondam fuimus, sed nunc tū hostis es."
+    ]
+  },
+  "sed": {
+    "definition": "Sed est verbum quod dīcitur inter duās rēs dīversās. Hōc verbō ūtimur ubi aliquid accidit aliter quam exspectāmus.",
+    "examples": [
+      "Puer est vānus, sed bona est puella.",
+      "Marcus nōn adest, sed amīcus eius hīc est.",
+      "Inimīcus gladium habet, sed nōn pugnat."
+    ]
+  },
+  "neque": {
+    "definition": "Neque est verbum quod dīcit 'et nōn'. Hoc verbum rēs aut hominēs aut facta dīvidit.",
+    "examples": [
+      "Puer neque vīnum bibit neque cibum edit.",
+      "Neque Marcus neque Iūlia ad urbem vēnit.",
+      "Amīcus meus nōn rīdet, neque verba dīcit."
+    ]
+  },
+  "nunc": {
+    "definition": "Nunc est hoc tempore et hāc hōrā. Significat rēs quae hōc diē et hōīc locō aguntur.",
+    "examples": [
+      "Nunc puerī in lūdō legunt, sed mox domum ībunt.",
+      "Utinam nunc amīcum meum vidērem!",
+      "Quid tū nunc agis in urbe cum patre tuō?"
+    ]
+  },
+  "quam": {
+    "definition": "Hoc verbum adhibētur in comparātiōne inter duās rēs. Magis adhibētur post 'magis' vel rēs quae 'maior' est.",
+    "examples": [
+      "Hic mīles est fortior quam ille.",
+      "Nunc magis tē amō quam antea.",
+      "Dōnum tuum rārius est quam aurum.",
+      "Nihil hominī melius est quam sapientia."
+    ]
+  },
+  "procul": {
+    "definition": "Procul est advērbium quod significat rem vel hominem nōn prope esse, sed in locō remōtō vel longē abesse.",
+    "examples": [
+      "Urbs Rōma ā flūmine procul non abest.",
+      "Puer videt hostēs quī procul in monte stant.",
+      "Māter fīlium vocat, sed ille est procul et eam audīre nōn potest."
+    ]
+  },
+  "ob": {
+    "definition": "Ob significat 'propter' vel 'ad'. Haec vox dīcit causam rēī vel locum quī contrā est.",
+    "examples": [
+      "Ob amōrem puellae, puer flōrēs ad aedēs portat.",
+      "Mīles ob vulnus ex aciē ad castra discēdit.",
+      "Ob eam rem, dux exercitum contrā hostēs addūcit.",
+      "Multī hominēs ob metum mortis dīs vōta faciunt."
+    ]
+  },
+  "ita": {
+    "definition": "Ita est modus dīcendī quī rem vēram esse dēmōnstrat. Hoc verbum similiter ac 'sīc' adhibētur.",
+    "examples": [
+      "Ita est; rēctē dīcis.",
+      "Marcus ita amīcōs dīligit ut vītam prō eīs det.",
+      "Res ita sē habet sicut fēmina nārrāvit."
+    ]
+  },
+  "velut": {
+    "definition": "Hoc verbum significat rem esse similem alterī reī. Adhibētur cum rēs comparantur.",
+    "examples": [
+      "Puer currit velut equus per agrōs.",
+      "Puella canit velut avis in silvā.",
+      "Mīles stat velut saxum ante portam urbis."
+    ]
+  },
+  "vix": {
+    "definition": "Hoc verbum significat rem fierī sed cum magnā difficultāte. Paene nōn valet.",
+    "examples": [
+      "Puer aegrē currit et vix ad portam venit.",
+      "Vox rēgis ad mē vix pervenit.",
+      "Haud multum cibī habēmus, itaque vix vīvimus."
+    ]
+  },
+  "semper": {
+    "definition": "Semper significat rēs vel tempus quod fīnem nōn habet. Est nūllō tempore dēficiens et omnibus diēbus manēre dīcitur.",
+    "examples": [
+      "Amīcus meus fidēlis mē semper iuvat.",
+      "Glōria virōrum bonōrum semper vīvet.",
+      "Sol in caelō semper lūcet et terram lūmine implet."
+    ]
+  },
+  "tandem": {
+    "definition": "Tandem est verbum quod dīcit aliquid fierī post longum tempus vel post multam moram.",
+    "examples": [
+      "Amīcus meus ad vīllam tandem advenit.",
+      "Tandem fīnis bellī est et pāx in terrā manet.",
+      "Puer, quī diū errābat, viam ad urbem tandem invēnit."
+    ]
+  },
+  "tam": {
+    "definition": "Tam dīcit rem māgnam in modō esse. Hoc verbum saepe dīcit 'ita' vel 'tantum' ante nōmen aut verbum.",
+    "examples": [
+      "Puer nōn tam celer est quam equus.",
+      "Cur vōs tam laetī estis hodiē?",
+      "Hic labor est tam gravis ut mē fessum faciat.",
+      "Nēmō in urbe tam sapiēns est quam Cicerō."
+    ]
+  },
+  "sine": {
+    "definition": "Sine significat hominem vel rem abesse. Quī sine rē est, eam rem nōn habet.",
+    "examples": [
+      "Sine aquā et cibō hominēs vīvere nōn possunt.",
+      "Marcus sine amīcīs in viā sōlus ībat.",
+      "Nēmō tūtus est sine armīs in mediō bellō.",
+      "Mors venit sine morā et vītam aufert."
+    ]
+  },
+  "seu": {
+    "definition": "Seu est verbum quod significat 'sive' vel 'aut'. Hōc verbō ūtimur cum duae rēs pōnuntur et nōn rēfert utra rēs accidat.",
+    "examples": [
+      "Seu tū venīs seu amīcus tuus venit, ego sum laetus.",
+      "Puer librum legit, seu in hortō sedet seu in tēctō manet.",
+      "Sapiēns mortem nōn timet, seu hodiē venit seu crās."
+    ]
+  },
+  "unde": {
+    "definition": "Unde est verbum quō interrogāmus dē locō ex quō rēs vel hominēs veniunt.",
+    "examples": [
+      "Unde venīs, mī bone amīce?",
+      "Puer nōn videt unde aqua fluat.",
+      "Locus unde exiī nōn procul ab urbe abest."
+    ]
+  },
+  "sub": {
+    "definition": "Hoc verbum significat rem esse sub aliquā rē. Prō rē eōrum quī in locum īmuni cadunt vel sub tēctō stant.",
+    "examples": [
+      "Puer sub arbore sedet et librum legit.",
+      "Bovēs agrum sub iugum dūcunt.",
+      "Sub noctem omnēs hominēs in aedēs adveniunt.",
+      "Nāvis sub undās ad īmuni aequor dēscendit."
+    ]
+  },
+  "tamen": {
+    "definition": "Tamen dīcit aliquid fīerī quamquam rēs adversae impedīre possunt. Hoc verbum contrā spem vel ratiōnem pōnitur.",
+    "examples": [
+      "Puer miser erat, rīdēre tamen volēbat.",
+      "Mīlitēs multī cecidērunt, victor tamen in urbem vēnit.",
+      "Perīculum māgnum est, amīcum tamen nōn relinquam."
+    ]
+  },
+  "tot": {
+    "definition": "Hoc verbum dīcit quantum est aut quotiēns rēs accidit; significat māgnum numerum rērum vel hominum.",
+    "examples": [
+      "Tot virī in forō aderant ut eōs nōn numerāre possem.",
+      "Tot perīcula vīta habet, sed fortūna nōs iuvat.",
+      "Quārē tot librōs hodiē legis?"
+    ]
+  },
+  "vel": {
+    "definition": "Hoc verbum significat rem unam aut aliam rem rē vērā rēctam esse. Verbum similis est 'aut' sed nōn tam dūrum.",
+    "examples": [
+      "Ad tē veniam hodiē vel crās.",
+      "Puer librum legere vel lūdere vult.",
+      "In hāc terrā hominēs vīvunt vel in urbe vel in agrīs.",
+      "Tū potes exīre vel manēre."
+    ]
+  },
+  "super": {
+    "definition": "Hoc verbum significat rem esse in locō altiōre quam aliam rem. Etiam significat plūs quam numerum aut modum certum.",
+    "examples": [
+      "Avis parva super arborem altam volat.",
+      "Māgnus numerus hostium super montem vidētur.",
+      "Puer librum super mēnsam pōnit ut eum legat.",
+      "Hīc vir super cēterōs dīvitiae et honōre est."
+    ]
+  },
+  "ubi": {
+    "definition": "Ubi est locus in quō rēs vel homō est. Hōc verbō quaerimus locum.",
+    "examples": [
+      "Ubi est amīcus meus?",
+      "Ubi hostēs adveniunt, mīlitēs arma capiunt.",
+      "In eō locō ubi rēx sedet, silentium est.",
+      "Nesciō ubi puerī et puellae lūdant."
     ]
   }
 }

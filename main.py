@@ -329,11 +329,7 @@ def cmd_gloss(args):
         return
 
     missing_lemmas = sorted(
-        [
-            l
-            for l in encountered_lemmas
-            if l and l.lower() not in vocab_list and l not in dictionary
-        ]
+        [l for l in encountered_lemmas if l and l not in dictionary]
     )
 
     print(f"Expanding dictionary ({len(missing_lemmas)} new lemmas)...")
@@ -343,6 +339,9 @@ def cmd_gloss(args):
         return
 
     results = {}
+
+    # Timeout for each gloss generation task
+    TASK_TIMEOUT = 90  # seconds
 
     # Process in smaller batches to avoid hanging
     batch_size = DEFAULT_MAX_WORKERS
@@ -360,8 +359,10 @@ def cmd_gloss(args):
             for future in concurrent.futures.as_completed(future_to_lemma):
                 lemma = future_to_lemma[future]
                 try:
-                    gloss = future.result()
+                    gloss = future.result(timeout=TASK_TIMEOUT)
                     results[lemma] = gloss
+                except concurrent.futures.TimeoutError:
+                    print(f"    Timeout generating gloss for '{lemma}'. Skipping...")
                 except glossgen.GlossGenerationError as e:
                     print(f"    Error generating gloss for '{lemma}': {e}. Skipping...")
                 except Exception as e:
