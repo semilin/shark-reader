@@ -17,6 +17,8 @@
 <style>
 	.app-container {
 		height: 100vh;
+		max-width: 1400px;
+		margin: 0 auto;
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;

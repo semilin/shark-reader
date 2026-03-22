@@ -29,7 +29,7 @@
 <style>
 	.word {
 		background: none;
-		border: none;
+		border: 2px solid transparent;
 		color: var(--color-text);
 		font-family: var(--font-serif);
 		font-size: 1.125rem;
@@ -45,7 +45,7 @@
 
 	.word-selected {
 		background-color: var(--color-bg);
-		border: 2px solid var(--color-primary);
+		border-color: var(--color-primary);
 	}
 
 	.core-star {
