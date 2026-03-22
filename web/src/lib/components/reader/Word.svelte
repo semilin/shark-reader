@@ -33,7 +33,7 @@
 		color: var(--color-text);
 		font-family: var(--font-serif);
 		font-size: 1.125rem;
-		padding: 2px 4px;
+		padding: 2px 0px;
 		border-radius: var(--radius-sm);
 		cursor: pointer;
 		transition: all var(--transition-fast);
