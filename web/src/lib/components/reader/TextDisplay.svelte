@@ -13,58 +13,59 @@
 
 	let { tokens, workType, selectedLemma, rangeIndices, coreLookup, onWordClick }: Props = $props();
 
-	let wordIndex = 0;
+	interface WordToken {
+		token: Token;
+		index: number;
+	}
 
 	interface Line {
-		tokens: Token[];
+		words: WordToken[];
+		otherTokens: Token[];
 		lineNumber: number;
 	}
 
-	function groupIntoLines(tokens: Token[], isPoem: boolean): Line[] {
+	function processTokens(tokens: Token[], isPoem: boolean): Line[] {
 		const lines: Line[] = [];
-		let currentTokens: Token[] = [];
+		let currentWords: WordToken[] = [];
+		let currentOther: Token[] = [];
 		let lineNum = 0;
+		let wordCount = 0;
+
+		function flushLine() {
+			if (currentWords.length > 0 || currentOther.length > 0) {
+				lines.push({ 
+					words: [...currentWords], 
+					otherTokens: [...currentOther], 
+					lineNumber: lineNum 
+				});
+				currentWords = [];
+				currentOther = [];
+			}
+		}
 
 		for (const token of tokens) {
 			if (token.t === 'n') {
+				flushLine();
 				lineNum++;
-				lines.push({ tokens: currentTokens, lineNumber: lineNum });
-				currentTokens = [];
 			} else if (token.t === 's') {
-				if (currentTokens.length > 0) {
-					lines.push({ tokens: currentTokens, lineNumber: lineNum });
-					currentTokens = [];
-				}
-				lines.push({ tokens: [token], lineNumber: lineNum });
+				flushLine();
+				lines.push({ words: [], otherTokens: [token], lineNumber: lineNum });
+			} else if (token.t === 'w' && token.l) {
+				currentWords.push({ token, index: wordCount });
+				wordCount++;
 			} else {
-				currentTokens.push(token);
+				currentOther.push(token);
 			}
 		}
 
-		if (currentTokens.length > 0) {
-			lines.push({ tokens: currentTokens, lineNumber: lineNum });
-		}
-
+		flushLine();
 		return lines;
 	}
 
-	let lines = $derived(groupIntoLines(tokens, workType === 'poem'));
+	let lines = $derived(processTokens(tokens, workType === 'poem'));
 
 	function shouldShowLineNumber(lineNum: number): boolean {
 		return workType === 'poem' && lineNum > 0 && lineNum % 5 === 0;
-	}
-
-	function getWordIndex(lineIdx: number, tokenIdx: number): number {
-		let count = 0;
-		for (let i = 0; i < lineIdx; i++) {
-			for (const token of lines[i].tokens) {
-				if (token.t === 'w') count++;
-			}
-		}
-		for (let i = 0; i < tokenIdx; i++) {
-			if (lines[lineIdx].tokens[i].t === 'w') count++;
-		}
-		return count;
 	}
 </script>
 
@@ -79,20 +80,18 @@
 				</span>
 			{/if}
 			<span class="line-content">
-				{#each line.tokens as token, tokenIdx (tokenIdx)}
-					{#if token.t === 'w' && token.l}
-						{@const idx = getWordIndex(lineIdx, tokenIdx)}
-						<Word
-							{token}
-							index={idx}
-							selected={selectedLemma === token.l && rangeIndices.size === 0}
-							inRange={rangeIndices.has(idx)}
-							isCore={coreLookup(token.l)}
-							onclick={(index, e) => onWordClick(index, token.l!, e.shiftKey)}
-						/>
-					{:else}
-						<Word {token} />
-					{/if}
+				{#each line.words as { token, index } (index)}
+					<Word
+						{token}
+						{index}
+						selected={selectedLemma === token.l && rangeIndices.size === 0}
+						inRange={rangeIndices.has(index)}
+						isCore={coreLookup(token.l!)}
+						onclick={(i, e) => onWordClick(i, token.l!, e.shiftKey)}
+					/>
+				{/each}
+				{#each line.otherTokens as token, idx (idx)}
+					<Word {token} />
 				{/each}
 			</span>
 		</div>
