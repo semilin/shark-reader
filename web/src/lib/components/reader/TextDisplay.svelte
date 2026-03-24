@@ -6,11 +6,14 @@
 		tokens: Token[];
 		workType: WorkType;
 		selectedLemma: string | null;
+		rangeIndices: Set<number>;
 		coreLookup: (lemma: string) => boolean;
-		onWordSelect: (lemma: string) => void;
+		onWordClick: (index: number, lemma: string, shiftKey: boolean) => void;
 	}
 
-	let { tokens, workType, selectedLemma, coreLookup, onWordSelect }: Props = $props();
+	let { tokens, workType, selectedLemma, rangeIndices, coreLookup, onWordClick }: Props = $props();
+
+	let wordIndex = 0;
 
 	interface Line {
 		tokens: Token[];
@@ -50,10 +53,23 @@
 	function shouldShowLineNumber(lineNum: number): boolean {
 		return workType === 'poem' && lineNum > 0 && lineNum % 5 === 0;
 	}
+
+	function getWordIndex(lineIdx: number, tokenIdx: number): number {
+		let count = 0;
+		for (let i = 0; i < lineIdx; i++) {
+			for (const token of lines[i].tokens) {
+				if (token.t === 'w') count++;
+			}
+		}
+		for (let i = 0; i < tokenIdx; i++) {
+			if (lines[lineIdx].tokens[i].t === 'w') count++;
+		}
+		return count;
+	}
 </script>
 
 <div class="text-display">
-	{#each lines as line, idx (idx)}
+	{#each lines as line, lineIdx (lineIdx)}
 		<div class="line">
 			{#if workType === 'poem'}
 				<span class="line-number">
@@ -65,11 +81,14 @@
 			<span class="line-content">
 				{#each line.tokens as token, tokenIdx (tokenIdx)}
 					{#if token.t === 'w' && token.l}
+						{@const idx = getWordIndex(lineIdx, tokenIdx)}
 						<Word
 							{token}
-							selected={selectedLemma === token.l}
+							index={idx}
+							selected={selectedLemma === token.l && rangeIndices.size === 0}
+							inRange={rangeIndices.has(idx)}
 							isCore={coreLookup(token.l)}
-							onclick={() => onWordSelect(token.l!)}
+							onclick={(index, e) => onWordClick(index, token.l!, e.shiftKey)}
 						/>
 					{:else}
 						<Word {token} />

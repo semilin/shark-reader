@@ -3,18 +3,20 @@
 
 	interface Props {
 		token: Token;
+		index?: number;
 		selected?: boolean;
+		inRange?: boolean;
 		isCore?: boolean;
-		onclick?: () => void;
+		onclick?: (index: number, event: MouseEvent) => void;
 	}
 
-	let { token, selected = false, isCore = false, onclick }: Props = $props();
+	let { token, index = 0, selected = false, inRange = false, isCore = false, onclick }: Props = $props();
 </script>
 
 {#if token.t === 'w'}
 	<button
-		class="word {selected ? 'word-selected' : ''}"
-		onclick={onclick}
+		class="word {selected ? 'word-selected' : ''} {inRange ? 'word-in-range' : ''}"
+		onclick={(e) => onclick?.(index, e)}
 	>
 		{token.w}{#if isCore}<span class="core-star"> ★</span>{/if}
 	</button>
@@ -48,9 +50,22 @@
 		border-color: var(--color-primary);
 	}
 
+	.word-in-range {
+		background-color: var(--color-primary);
+		color: var(--color-bg);
+	}
+
+	.word-in-range.word-selected {
+		border-color: var(--color-text);
+	}
+
 	.core-star {
 		color: var(--color-primary);
 		font-size: 0.875rem;
+	}
+
+	.word-in-range .core-star {
+		color: var(--color-bg);
 	}
 
 	.punctuation {

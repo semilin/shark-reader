@@ -2,7 +2,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { base } from '$app/paths';
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { Button } from '$lib/components/common';
 	import TextDisplay from '$lib/components/reader/TextDisplay.svelte';
 	import GlossPanel from '$lib/components/reader/GlossPanel.svelte';
@@ -22,7 +22,12 @@
 	let loading = $state(true);
 	let error: string | null = $state(null);
 
+	let anchorIndex: number | null = $state(null);
+	let focusIndex: number | null = $state(null);
+	let rangeIndices: Set<number> = $state(new Set());
+
 	let isMobile = $state(false);
+	let textContainerRef: HTMLDivElement | null = $state(null);
 
 	onMount(() => {
 		isMobile = window.innerWidth < 768;
@@ -58,8 +63,75 @@
 		}
 	}
 
-	function handleWordSelect(lemma: string) {
-		selectedLemma = lemma;
+	function handleWordClick(index: number, lemma: string, shiftKey: boolean) {
+		if (shiftKey && anchorIndex !== null) {
+			focusIndex = index;
+			selectedLemma = null;
+			computeRangeIndices();
+		} else {
+			anchorIndex = index;
+			focusIndex = null;
+			rangeIndices = new Set();
+			selectedLemma = lemma;
+		}
+	}
+
+	function computeRangeIndices() {
+		if (anchorIndex === null || focusIndex === null) {
+			rangeIndices = new Set();
+			return;
+		}
+
+		const start = Math.min(anchorIndex, focusIndex);
+		const end = Math.max(anchorIndex, focusIndex);
+		const indices = new Set<number>();
+		for (let i = start; i <= end; i++) {
+			indices.add(i);
+		}
+		rangeIndices = indices;
+	}
+
+	function clearSelection() {
+		anchorIndex = null;
+		focusIndex = null;
+		rangeIndices = new Set();
+		selectedLemma = null;
+	}
+
+	function getSelectedText(): string | null {
+		if (rangeIndices.size > 0) {
+			const sortedIndices = [...rangeIndices].sort((a, b) => a - b);
+			const startIdx = sortedIndices[0];
+			const endIdx = sortedIndices[sortedIndices.length - 1];
+
+			let wordCount = 0;
+			const textParts: string[] = [];
+
+			for (const token of tokens) {
+				if (token.t === 'w') {
+					if (wordCount >= startIdx && wordCount <= endIdx) {
+						textParts.push(token.w);
+					}
+					wordCount++;
+				} else if (token.t === 'p' && wordCount > startIdx && wordCount <= endIdx) {
+					textParts.push(token.w);
+				} else if (token.t === 'n' && wordCount > startIdx && wordCount <= endIdx) {
+					textParts.push(' ');
+				}
+			}
+
+			return textParts.join(' ');
+		}
+
+		if (selectedLemma) {
+			for (const token of tokens) {
+				if (token.t === 'w' && token.l === selectedLemma) {
+					return token.w;
+				}
+			}
+		}
+
+		return null;
 	}
 
 	function getGloss(lemma: string): Gloss | null {
@@ -77,6 +149,38 @@
 	function goBack() {
 		goto(base || '/');
 	}
+
+	function handleKeydown(e: KeyboardEvent) {
+		if (e.key === 'Escape') {
+			clearSelection();
+		}
+	}
+
+	function handleCopy(e: ClipboardEvent) {
+		const text = getSelectedText();
+		if (text) {
+			e.preventDefault();
+			e.clipboardData?.setData('text/plain', text);
+		}
+	}
+
+	function handleContainerClick(e: MouseEvent) {
+		const target = e.target as HTMLElement;
+		if (!target.closest('button.word')) {
+			clearSelection();
+		}
+	}
+
+	$effect(() => {
+		if (typeof window !== 'undefined') {
+			document.addEventListener('keydown', handleKeydown);
+			document.addEventListener('copy', handleCopy);
+			return () => {
+				document.removeEventListener('keydown', handleKeydown);
+				document.removeEventListener('copy', handleCopy);
+			};
+		}
+	});
 </script>
 
 <svelte:head>
@@ -105,19 +209,20 @@
 		</header>
 
 		<div class="reader-content">
-			<div class="text-container">
+			<div class="text-container" bind:this={textContainerRef} onclick={handleContainerClick}>
 				<TextDisplay
 					{tokens}
 					workType={textData.metadata.work_type}
 					{selectedLemma}
+					{rangeIndices}
 					coreLookup={isCore}
-					onWordSelect={handleWordSelect}
+					onWordClick={handleWordClick}
 				/>
 			</div>
 
 			{#if isMobile}
-				<div class="mobile-gloss-sheet" class:open={selectedLemma}>
-					<button type="button" class="sheet-handle" aria-label="Close gloss panel" onclick={() => selectedLemma = null}>
+				<div class="mobile-gloss-sheet" class:open={selectedLemma && rangeIndices.size === 0}>
+					<button type="button" class="sheet-handle" aria-label="Close gloss panel" onclick={clearSelection}>
 						<span class="handle-bar"></span>
 					</button>
 					<GlossPanel
@@ -129,12 +234,16 @@
 				</div>
 			{:else}
 				<aside class="desktop-gloss-panel">
-					<GlossPanel
-						lemma={selectedLemma}
-						gloss={selectedLemma ? getGloss(selectedLemma) : null}
-						isCore={selectedLemma ? isCore(selectedLemma) : false}
-						frequency={selectedLemma ? getFrequency(selectedLemma) : null}
-					/>
+					{#if selectedLemma && rangeIndices.size === 0}
+						<GlossPanel
+							lemma={selectedLemma}
+							gloss={selectedLemma ? getGloss(selectedLemma) : null}
+							isCore={selectedLemma ? isCore(selectedLemma) : false}
+							frequency={selectedLemma ? getFrequency(selectedLemma) : null}
+						/>
+					{:else}
+						<p class="placeholder">{t('click_word', $appState.interfaceLang)}</p>
+					{/if}
 				</aside>
 			{/if}
 		</div>
@@ -208,6 +317,12 @@
 		border-left: 1px solid var(--color-surface);
 		background-color: var(--color-surface);
 		overflow-y: auto;
+	}
+
+	.placeholder {
+		color: var(--color-text-muted);
+		padding: var(--spacing-lg);
+		text-align: center;
 	}
 
 	.mobile-gloss-sheet {
