@@ -123,10 +123,14 @@
 			return textParts.join(' ');
 		}
 
-		if (selectedLemma) {
+		if (anchorIndex !== null) {
+			let wordCount = 0;
 			for (const token of tokens) {
-				if (token.t === 'w' && token.l === selectedLemma) {
-					return token.w;
+				if (token.t === 'w') {
+					if (wordCount === anchorIndex) {
+						return token.w;
+					}
+					wordCount++;
 				}
 			}
 		}
