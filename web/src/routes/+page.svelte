@@ -9,7 +9,21 @@
 	import type { TextMetadata, Language } from '$lib/types';
 
 	let searchQuery = $state('');
-	let availableTexts = getAvailableTexts();
+	let availableTexts = $state<TextMetadata[]>([]);
+	let isLoading = $state(true);
+	let error = $state<string | null>(null);
+
+	$effect(() => {
+		getAvailableTexts()
+			.then((texts) => {
+				availableTexts = texts;
+				isLoading = false;
+			})
+			.catch((err) => {
+				error = err.message;
+				isLoading = false;
+			});
+	});
 
 	function interfaceLangToLanguage(): Language | null {
 		if ($appState.interfaceLang === 'latin') return 'latin';
@@ -53,9 +67,15 @@
 	</div>
 
 	<div class="text-list">
-		{#each filteredTexts() as text (text.path)}
-			<TextCard {text} onclick={() => openText(text)} />
-		{/each}
+		{#if isLoading}
+			<div class="loading-message">Loading texts...</div>
+		{:else if error}
+			<div class="error-message">Error: {error}</div>
+		{:else}
+			{#each filteredTexts() as text (text.path)}
+				<TextCard {text} onclick={() => openText(text)} />
+			{/each}
+		{/if}
 	</div>
 
 	<div class="glossary-buttons">
@@ -122,6 +142,17 @@
 		padding-top: var(--spacing-lg);
 		border-top: 1px solid var(--color-surface);
 		flex-shrink: 0;
+	}
+
+	.loading-message,
+	.error-message {
+		text-align: center;
+		padding: var(--spacing-xl);
+		color: var(--color-text-secondary);
+	}
+
+	.error-message {
+		color: var(--color-error, #dc3545);
 	}
 
 	@media (max-width: 768px) {

@@ -1,47 +1,11 @@
 import type { AnnotatedText, TextMetadata, Token } from '../types';
 
-const TEXT_FILES: Omit<TextMetadata, 'path'>[] = [
-	{
-		title: 'Aeneis, Prīmus Liber',
-		author: 'Publius Vergilius Marō',
-		language: 'latin',
-		work_type: 'poem'
-	},
-	{
-		title: 'Ἀπολογία Σωκράτους',
-		author: 'Πλάτων',
-		language: 'greek',
-		work_type: 'dialogue'
-	},
-	{
-		title: 'Κρίτων',
-		author: 'Πλάτων',
-		language: 'greek',
-		work_type: 'dialogue'
-	},
-	{
-		title: 'Μένων',
-		author: 'Πλάτων',
-		language: 'greek',
-		work_type: 'dialogue'
+export async function getAvailableTexts(): Promise<TextMetadata[]> {
+	const response = await fetch('/shark-reader/texts/index.json');
+	if (!response.ok) {
+		throw new Error('Failed to load texts index');
 	}
-];
-
-function getPathFromTitle(title: string): string {
-	const pathMap: Record<string, string> = {
-		'Aeneis, Prīmus Liber': 'Aeneid1',
-		'Ἀπολογία Σωκράτους': 'Apology',
-		'Κρίτων': 'Crito',
-		'Μένων': 'Meno'
-	};
-	return pathMap[title] || title;
-}
-
-export function getAvailableTexts(): TextMetadata[] {
-	return TEXT_FILES.map((meta) => ({
-		...meta,
-		path: `/shark-reader/texts/${getPathFromTitle(meta.title)}.annotated.json`
-	}));
+	return response.json();
 }
 
 export async function loadText(path: string): Promise<AnnotatedText> {

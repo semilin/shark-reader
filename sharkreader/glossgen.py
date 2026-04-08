@@ -109,9 +109,13 @@ def validate_gloss_response(response: Any) -> dict[str, Any]:
     if not isinstance(response["examples"], list):
         raise GlossGenerationError("'examples' must be a list")
 
+    if "synonyms" in response and not isinstance(response["synonyms"], list):
+        raise GlossGenerationError("'synonyms' must be a list")
+
     return {
         "definition": str(response["definition"]),
         "examples": [str(ex) for ex in response["examples"]],
+        "synonyms": [str(syn) for syn in response["synonyms"]] if "synonyms" in response else []
     }
 
 
@@ -127,8 +131,9 @@ def generate_gloss(
     prompt = (
         f"# CORE VOCABULARY\n{vocab_str}\n"
         f"# DIRECTIONS\nGenerate an immersive {config.name} gloss for the given {config.name} word. "
-        f"The definition should, in a simple sentence or two, explain the meaning of the word using ONLY the vocab words provided in the CORE VOCABULARY. "
-        f"Further, generate 2-4 example sentences using the word that cover its basic usage and give extra context to the definition (again, using only core vocab words or common {config.name} names). "
+        f"The definition should, in a simple sentence or two, explain the meaning of the word using ONLY the vocab words provided in the CORE VOCABULARY. If there are words outside the core vocab which are highly relevant to the defined word, you may use them; still, prioritize core vocabulary. Use proper grammar -- if the word to be defined is not a noun, treat it as a substantive for the purpose of definition (e.g., verbs should be defined as a substantive infinitive)."
+        f"Further, generate 2-4 example sentences using the word that cover its basic usage and give extra context to the definition (again, using primarily core vocab words or common {config.name} names). "
+        f"Finally, generate 0-2 close synonyms to the word in their primary principle part. If there are no synonyms that are very close, the list should be empty. "
         f"Each example should use the word in a different form. Respond with JSON. "
         f'For example, if the word were "{config.example_word}", respond with {config.example_response}.\n'
         f"The word is: {word}."

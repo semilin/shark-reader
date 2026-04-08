@@ -238,6 +238,27 @@ def cmd_from_xml(args):
                 process_element(child)
             add_token("n", "", "")
 
+        elif tag == "sp":
+            # Speech container - process children (speaker and lines)
+            for child in elem:
+                process_element(child)
+            add_token("n", "", "")
+
+        elif tag == "speaker":
+            # Speaker name - add as speaker token
+            if elem.text:
+                speaker = elem.text.strip()
+                if speaker:
+                    add_token("s", speaker + ":", "")
+
+        elif tag == "l":
+            # Line of verse - process text content and children (like add, del, gap)
+            if elem.text:
+                process_text_content(elem.text)
+            for child in elem:
+                process_element(child)
+            add_token("n", "", "")
+
         elif tag == "said":
             who = elem.get("who", "")
             if who:
@@ -263,6 +284,23 @@ def cmd_from_xml(args):
         elif tag == "q":
             for child in elem:
                 process_element(child)
+
+        elif tag == "note":
+            # Skip note elements (editorial notes, cast lists, etc.)
+            pass
+
+        elif tag == "del":
+            # Deleted text - skip (don't include in output)
+            pass
+
+        elif tag == "add":
+            # Added text - process children
+            for child in elem:
+                process_element(child)
+
+        elif tag == "gap":
+            # Gap in text - add placeholder
+            add_token("p", "[...]", "")
 
         elif elem.text:
             process_text_content(elem.text)
