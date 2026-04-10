@@ -13,6 +13,14 @@
 	}
 
 	let { lemma, gloss, isCore, frequency }: Props = $props();
+
+	async function copyToClipboard(text: string) {
+		try {
+			await navigator.clipboard.writeText(text);
+		} catch (err) {
+			console.error('Failed to copy:', err);
+		}
+	}
 </script>
 
 <div class="gloss-panel" transition:fade={{ duration: 200 }}>
@@ -25,14 +33,40 @@
 		</div>
 
 		{#if gloss}
-			<p class="definition">{gloss.definition}</p>
+			<div class="definition-row">
+				<p class="definition">{gloss.definition}</p>
+				<button
+					type="button"
+					class="copy-btn"
+					title={t('copy', $appState.interfaceLang)}
+					onclick={() => copyToClipboard(gloss.definition)}
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+						<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+					</svg>
+				</button>
+			</div>
 
 			{#if gloss.examples.length > 0}
 				<div class="examples">
 					<h3 class="examples-title">{t('examples', $appState.interfaceLang)}</h3>
 					<ul class="examples-list">
 						{#each gloss.examples as example}
-							<li>{example}</li>
+							<li>
+								<span class="example-text">{example}</span>
+								<button
+									type="button"
+									class="copy-btn"
+									title={t('copy', $appState.interfaceLang)}
+									onclick={() => copyToClipboard(example)}
+								>
+									<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+										<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+									</svg>
+								</button>
+							</li>
 						{/each}
 					</ul>
 				</div>
@@ -65,10 +99,37 @@
 		font-weight: 600;
 	}
 
+	.definition-row {
+		display: flex;
+		align-items: flex-start;
+		gap: var(--spacing-sm);
+		margin-bottom: var(--spacing-lg);
+	}
+
 	.definition {
 		font-size: 1.125rem;
 		line-height: 1.6;
-		margin-bottom: var(--spacing-lg);
+		flex: 1;
+		margin: 0;
+	}
+
+	.copy-btn {
+		background: none;
+		border: none;
+		padding: var(--spacing-xs);
+		cursor: pointer;
+		color: var(--color-text-muted);
+		border-radius: var(--radius-sm);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		transition: all var(--transition-fast);
+	}
+
+	.copy-btn:hover {
+		color: var(--color-primary);
+		background-color: var(--color-bg);
 	}
 
 	.examples {
@@ -89,6 +150,9 @@
 	}
 
 	.examples-list li {
+		display: flex;
+		align-items: flex-start;
+		gap: var(--spacing-xs);
 		position: relative;
 		padding-left: var(--spacing-md);
 	}
@@ -98,6 +162,10 @@
 		position: absolute;
 		left: 0;
 		color: var(--color-primary);
+	}
+
+	.example-text {
+		flex: 1;
 	}
 
 	.core-note {

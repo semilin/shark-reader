@@ -12,6 +12,7 @@ interface TranslationSet {
 	examples: string;
 	select_word: string;
 	select_word_detail: string;
+	copy: string;
 }
 
 const translations: Record<InterfaceLang, TranslationSet> = {
@@ -26,7 +27,8 @@ const translations: Record<InterfaceLang, TranslationSet> = {
 		no_gloss: 'No gloss available',
 		examples: 'Examples:',
 		select_word: 'Select a word',
-		select_word_detail: 'Select a word to view its gloss'
+		select_word_detail: 'Select a word to view its gloss',
+		copy: 'Copy'
 	},
 	latin: {
 		library_title: 'Bibliothēca',
@@ -39,7 +41,8 @@ const translations: Record<InterfaceLang, TranslationSet> = {
 		no_gloss: 'Nulla interpretātiō',
 		examples: 'Exempla:',
 		select_word: 'Verbum ēlige',
-		select_word_detail: 'Verbum ēlige ut interpretātiōnem videās'
+		select_word_detail: 'Verbum ēlige ut interpretātiōnem videās',
+		copy: 'Describere'
 	},
 	greek: {
 		library_title: 'Βιβλιοθήκη',
@@ -52,7 +55,8 @@ const translations: Record<InterfaceLang, TranslationSet> = {
 		no_gloss: 'Οὐκ ἔστιν ἐξήγησις',
 		examples: 'Παραδείγματα:',
 		select_word: 'Ἐπέλεξον λέξιν',
-		select_word_detail: 'Ἐπέλεξον λέξιν ἵνα τὴν ἐξήγησιν ἴδῃς'
+		select_word_detail: 'Ἐπέλεξον λέξιν ἵνα τὴν ἐξήγησιν ἴδῃς',
+		copy: 'Ἀντιγράφειν'
 	}
 };
 
