@@ -7,6 +7,13 @@
     "path": "/shark-reader/texts/Aeneid1.annotated.json"
   },
   {
+    "title": "Ἀντιγόνη",
+    "author": "Σοφοκλῆς",
+    "language": "greek",
+    "work_type": "poem",
+    "path": "/shark-reader/texts/antigone.annotated.json"
+  },
+  {
     "title": "Ἀπολογία Σωκράτους",
     "author": "Πλάτων",
     "language": "greek",

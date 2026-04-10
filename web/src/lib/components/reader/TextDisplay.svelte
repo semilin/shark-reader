@@ -21,36 +21,43 @@
 	interface Line {
 		words: WordToken[];
 		otherTokens: Token[];
-		lineNumber: number;
+		lineNumber: number | null;
 	}
 
 	function processTokens(tokens: Token[], isPoem: boolean): Line[] {
 		const lines: Line[] = [];
 		let currentWords: WordToken[] = [];
 		let currentOther: Token[] = [];
-		let lineNum = 0;
+		let poeticLineNum = 0;  // Counts only lines with actual poetic content
 		let wordCount = 0;
+		let hasContent = false;  // Track if current line has word tokens
 
 		function flushLine() {
 			if (currentWords.length > 0 || currentOther.length > 0) {
-				lines.push({ 
-					words: [...currentWords], 
-					otherTokens: [...currentOther], 
-					lineNumber: lineNum 
+				// Assign line number only to lines with actual word content in poems
+				const lineNumber = isPoem && hasContent ? ++poeticLineNum : null;
+
+				lines.push({
+					words: [...currentWords],
+					otherTokens: [...currentOther],
+					lineNumber
 				});
 				currentWords = [];
 				currentOther = [];
+				hasContent = false;
 			}
 		}
 
 		for (const token of tokens) {
 			if (token.t === 'n') {
 				flushLine();
-				lineNum++;
+				// Don't increment line number here - only when we see content
 			} else if (token.t === 's') {
 				flushLine();
-				lines.push({ words: [], otherTokens: [token], lineNumber: lineNum });
+				// Speaker tokens get their own line without a line number
+				lines.push({ words: [], otherTokens: [token], lineNumber: null });
 			} else if (token.t === 'w' && token.l) {
+				hasContent = true;
 				currentWords.push({ token, index: wordCount });
 				wordCount++;
 			} else {
@@ -64,8 +71,8 @@
 
 	let lines = $derived(processTokens(tokens, workType === 'poem'));
 
-	function shouldShowLineNumber(lineNum: number): boolean {
-		return workType === 'poem' && lineNum > 0 && lineNum % 5 === 0;
+	function shouldShowLineNumber(lineNum: number | null): boolean {
+		return lineNum !== null && lineNum > 0 && lineNum % 5 === 0;
 	}
 </script>
 
