@@ -1,6 +1,7 @@
 export interface Gloss {
 	definition: string;
 	examples: string[];
+	synonyms?: string[];
 }
 
 export type TokenType = 'w' | 'p' | 'n' | 's' | 'm';

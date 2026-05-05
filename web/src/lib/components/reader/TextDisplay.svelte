@@ -13,37 +13,32 @@
 
 	let { tokens, workType, selectedLemma, rangeIndices, coreLookup, onWordClick }: Props = $props();
 
-	interface WordToken {
+	interface LineToken {
 		token: Token;
-		index: number;
+		index: number | undefined;
 	}
 
 	interface Line {
-		words: WordToken[];
-		otherTokens: Token[];
+		tokens: LineToken[];
 		lineNumber: number | null;
 	}
 
 	function processTokens(tokens: Token[], isPoem: boolean): Line[] {
 		const lines: Line[] = [];
-		let currentWords: WordToken[] = [];
-		let currentOther: Token[] = [];
-		let poeticLineNum = 0;  // Counts only lines with actual poetic content
+		let currentTokens: LineToken[] = [];
+		let poeticLineNum = 0;
 		let wordCount = 0;
-		let hasContent = false;  // Track if current line has word tokens
+		let hasContent = false;
 
 		function flushLine() {
-			if (currentWords.length > 0 || currentOther.length > 0) {
-				// Assign line number only to lines with actual word content in poems
+			if (currentTokens.length > 0) {
 				const lineNumber = isPoem && hasContent ? ++poeticLineNum : null;
 
 				lines.push({
-					words: [...currentWords],
-					otherTokens: [...currentOther],
+					tokens: [...currentTokens],
 					lineNumber
 				});
-				currentWords = [];
-				currentOther = [];
+				currentTokens = [];
 				hasContent = false;
 			}
 		}
@@ -51,17 +46,15 @@
 		for (const token of tokens) {
 			if (token.t === 'n') {
 				flushLine();
-				// Don't increment line number here - only when we see content
 			} else if (token.t === 's') {
 				flushLine();
-				// Speaker tokens get their own line without a line number
-				lines.push({ words: [], otherTokens: [token], lineNumber: null });
+				lines.push({ tokens: [{ token, index: undefined }], lineNumber: null });
 			} else if (token.t === 'w' && token.l) {
 				hasContent = true;
-				currentWords.push({ token, index: wordCount });
+				currentTokens.push({ token, index: wordCount });
 				wordCount++;
 			} else {
-				currentOther.push(token);
+				currentTokens.push({ token, index: undefined });
 			}
 		}
 
@@ -87,18 +80,19 @@
 				</span>
 			{/if}
 			<span class="line-content">
-				{#each line.words as { token, index } (index)}
-					<Word
-						{token}
-						{index}
-						selected={selectedLemma === token.l && rangeIndices.size === 0}
-						inRange={rangeIndices.has(index)}
-						isCore={coreLookup(token.l!)}
-						onclick={(i, e) => onWordClick(i, token.l!, e.shiftKey)}
-					/>
-				{/each}
-				{#each line.otherTokens as token, idx (idx)}
-					<Word {token} />
+				{#each line.tokens as { token, index }, idx (idx)}
+					{#if token.t === 'w'}
+						<Word
+							{token}
+							{index}
+							selected={selectedLemma === token.l && rangeIndices.size === 0}
+							inRange={rangeIndices.has(index!)}
+							isCore={coreLookup(token.l!)}
+							onclick={(i, e) => onWordClick(i, token.l!, e.shiftKey)}
+						/>
+					{:else}
+						<Word {token} />
+					{/if}
 				{/each}
 			</span>
 		</div>

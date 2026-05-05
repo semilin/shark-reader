@@ -26,7 +26,12 @@
 <div class="gloss-panel" transition:fade={{ duration: 200 }}>
 	{#if lemma}
 		<div class="gloss-header">
-			<h2 class="lemma">{lemma}{#if isCore} ★{/if}</h2>
+			<div class="lemma-group">
+				<h2 class="lemma">{lemma}{#if isCore} ★{/if}</h2>
+				{#if gloss?.synonyms && gloss.synonyms.length > 0}
+					<span class="synonyms">{gloss.synonyms.join(', ')}</span>
+				{/if}
+			</div>
 			{#if frequency !== null}
 				<Badge variant="muted">{frequency.toFixed(1)}%</Badge>
 			{/if}
@@ -91,6 +96,14 @@
 		align-items: center;
 		gap: var(--spacing-sm);
 		margin-bottom: var(--spacing-md);
+	}
+
+	.lemma-group {
+		display: flex;
+		align-items: baseline;
+		gap: var(--spacing-sm);
+		flex-wrap: wrap;
+		flex: 1;
 	}
 
 	.lemma {
@@ -171,6 +184,12 @@
 	.core-note {
 		color: var(--color-text-muted);
 		font-style: italic;
+	}
+
+
+	.synonyms {
+		color: var(--color-text-muted);
+		font-size: 0.95rem;
 	}
 
 	.no-gloss {
