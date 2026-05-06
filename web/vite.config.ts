@@ -29,7 +29,7 @@ export default defineConfig({
 			},
 			workbox: {
 				globPatterns: ['**/*.{js,css,html,ico,png,svg,json}'],
-				globIgnores: ['**/dictionaries/*.json']
+				globIgnores: ['**/dictionaries/*.json', '**/stats/*.json', '**/iliad.annotated.json']
 			}
 		})
 	]
