@@ -10,9 +10,10 @@
 		gloss: Gloss | null;
 		isCore: boolean;
 		frequency: number | null;
+		onviewGlossary?: (lemma: string) => void;
 	}
 
-	let { lemma, gloss, isCore, frequency }: Props = $props();
+	let { lemma, gloss, isCore, frequency, onviewGlossary }: Props = $props();
 
 	async function copyToClipboard(text: string) {
 		try {
@@ -32,9 +33,24 @@
 					<span class="synonyms">{gloss.synonyms.join(', ')}</span>
 				{/if}
 			</div>
-			{#if frequency !== null}
-				<Badge variant="muted">{frequency.toFixed(1)}%</Badge>
-			{/if}
+			<div class="header-actions">
+				{#if frequency !== null}
+					<Badge variant="muted">{frequency.toFixed(1)}%</Badge>
+				{/if}
+				{#if onviewGlossary}
+					<button
+						type="button"
+						class="view-glossary-btn"
+						title={t('view_in_glossary', $appState.interfaceLang)}
+						onclick={() => onviewGlossary!(lemma!)}
+					>
+						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+							<path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+						</svg>
+					</button>
+				{/if}
+			</div>
 		</div>
 
 		{#if gloss}
@@ -106,10 +122,21 @@
 		flex: 1;
 	}
 
+	.header-actions {
+		display: flex;
+		align-items: center;
+		gap: var(--spacing-xs);
+	}
+
 	.lemma {
 		font-size: 1.75rem;
 		color: var(--color-primary);
 		font-weight: 600;
+	}
+
+	.synonyms {
+		color: var(--color-text-muted);
+		font-size: 0.95rem;
 	}
 
 	.definition-row {
@@ -126,7 +153,7 @@
 		margin: 0;
 	}
 
-	.copy-btn {
+	.copy-btn, .view-glossary-btn {
 		background: none;
 		border: none;
 		padding: var(--spacing-xs);
@@ -140,7 +167,7 @@
 		transition: all var(--transition-fast);
 	}
 
-	.copy-btn:hover {
+	.copy-btn:hover, .view-glossary-btn:hover {
 		color: var(--color-primary);
 		background-color: var(--color-bg);
 	}
@@ -184,12 +211,6 @@
 	.core-note {
 		color: var(--color-text-muted);
 		font-style: italic;
-	}
-
-
-	.synonyms {
-		color: var(--color-text-muted);
-		font-size: 0.95rem;
 	}
 
 	.no-gloss {

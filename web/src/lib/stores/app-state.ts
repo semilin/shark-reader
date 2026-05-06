@@ -3,11 +3,17 @@ import type { InterfaceLang } from '../types';
 
 interface AppState {
 	interfaceLang: InterfaceLang;
+	readerReturnPath: string | null;
+	readerScrollPosition: number;
+	readerScrollPath: string | null;
 }
 
 function createAppStore() {
 	const { subscribe, set, update } = writable<AppState>({
-		interfaceLang: 'english'
+		interfaceLang: 'english',
+		readerReturnPath: null,
+		readerScrollPosition: 0
+,		readerScrollPath: null
 	});
 
 	return {
@@ -21,7 +27,13 @@ function createAppStore() {
 				const nextIndex = (currentIndex + 1) % order.length;
 				return { ...state, interfaceLang: order[nextIndex] };
 			}),
-		reset: () => set({ interfaceLang: 'english' })
+		setReaderReturnPath: (path: string | null) =>
+			update((state) => ({ ...state, readerReturnPath: path })),
+		setReaderScrollPosition: (pos: number) =>
+			update((state) => ({ ...state, readerScrollPosition: pos })),
+		setReaderScrollPath: (path: string | null) =>
+			update((state) => ({ ...state, readerScrollPath: path })),
+		reset: () => set({ interfaceLang: 'english', readerReturnPath: null, readerScrollPosition: 0, readerScrollPath: null })
 	};
 }
 

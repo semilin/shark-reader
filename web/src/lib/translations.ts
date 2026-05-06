@@ -13,6 +13,12 @@ interface TranslationSet {
 	select_word: string;
 	select_word_detail: string;
 	copy: string;
+	word_stats: string;
+	total_appearances: string;
+	frequency_score: string;
+	top_forms: string;
+	appearances_by_text: string;
+	view_in_glossary: string;
 }
 
 const translations: Record<InterfaceLang, TranslationSet> = {
@@ -28,7 +34,13 @@ const translations: Record<InterfaceLang, TranslationSet> = {
 		examples: 'Examples:',
 		select_word: 'Select a word',
 		select_word_detail: 'Select a word to view its gloss',
-		copy: 'Copy'
+		copy: 'Copy',
+		word_stats: 'Word Statistics',
+		total_appearances: 'Total Appearances',
+		frequency_score: 'Frequency Score',
+		top_forms: 'Top Forms',
+		appearances_by_text: 'Appearances by Text',
+		view_in_glossary: 'View in Glossary'
 	},
 	latin: {
 		library_title: 'Bibliothēca',
@@ -42,7 +54,13 @@ const translations: Record<InterfaceLang, TranslationSet> = {
 		examples: 'Exempla:',
 		select_word: 'Verbum ēlige',
 		select_word_detail: 'Verbum ēlige ut interpretātiōnem videās',
-		copy: 'Describere'
+		copy: 'Describere',
+		word_stats: 'Statistica Verbi',
+		total_appearances: 'Numerus Appāritiōnum',
+		frequency_score: 'Gradus Frequentiae',
+		top_forms: 'Formae Frequentissimae',
+		appearances_by_text: 'Appāritiōnēs per Textum',
+		view_in_glossary: 'In Glossāriō Vidēre'
 	},
 	greek: {
 		library_title: 'Βιβλιοθήκη',
@@ -56,7 +74,13 @@ const translations: Record<InterfaceLang, TranslationSet> = {
 		examples: 'Παραδείγματα:',
 		select_word: 'Ἐπέλεξον λέξιν',
 		select_word_detail: 'Ἐπέλεξον λέξιν ἵνα τὴν ἐξήγησιν ἴδῃς',
-		copy: 'Ἀντιγράφειν'
+		copy: 'Ἀντιγράφειν',
+		word_stats: 'Στατιστικὰ τῆς λέξεως',
+		total_appearances: 'Σύνολον ἐμφανίσεων',
+		frequency_score: 'Βαθμὸς Συχνότητος',
+		top_forms: 'Κυριώτατοι τύποι',
+		appearances_by_text: 'Ἐμφανίσεις κατὰ σύγγραμμα',
+		view_in_glossary: 'Ἐν τῷ γλωσσαρίῳ ὁρᾶν'
 	}
 };
 

@@ -31,4 +31,13 @@ export interface AnnotatedText {
 
 export type Dictionary = Map<string, Gloss>;
 
+export interface WordStats {
+	total: number;
+	frequencyScore: number;
+	forms: [string, number][];
+	texts: { title: string; count: number }[];
+}
+
+export type GlobalStats = Record<string, WordStats>;
+
 export type InterfaceLang = 'english' | 'latin' | 'greek';

@@ -2,7 +2,7 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { base } from '$app/paths';
-	import { onMount, onDestroy } from 'svelte';
+	import { onMount, onDestroy, tick } from 'svelte';
 	import { Button } from '$lib/components/common';
 	import TextDisplay from '$lib/components/reader/TextDisplay.svelte';
 	import GlossPanel from '$lib/components/reader/GlossPanel.svelte';
@@ -20,6 +20,7 @@
 	let coreSet: Set<string> = $state(new Set());
 	let selectedLemma: string | null = $state(null);
 	let loading = $state(true);
+	let scrollRestored = $state(false);
 	let error: string | null = $state(null);
 
 	let anchorIndex: number | null = $state(null);
@@ -44,6 +45,7 @@
 	});
 
 	async function loadTextContent(path: string) {
+		scrollRestored = false;
 		try {
 			loading = true;
 			error = null;
@@ -57,6 +59,7 @@
 			coreSet = await getCoreList(data.metadata.language);
 			
 			loading = false;
+
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Failed to load text';
 			loading = false;
@@ -150,6 +153,26 @@
 		return frequencies.get(lemma) ?? null;
 	}
 
+	function handleScroll() {
+		if (!scrollRestored) return;
+		if (textContainerRef) {
+			appState.setReaderScrollPosition(textContainerRef.scrollTop);
+			const currentPath = $page.url.searchParams.get('text');
+			if (currentPath) {
+				appState.setReaderScrollPath(currentPath);
+			}
+		}
+	}
+
+
+	function viewInGlossary(lemma: string) {
+		if (!textData) return;
+		const lang = textData.metadata.language;
+		const currentPath = $page.url.pathname + $page.url.search;
+		appState.setReaderReturnPath(currentPath);
+		goto(`${base}/glossary/${lang}?word=${encodeURIComponent(lemma)}`);
+	}
+
 	function goBack() {
 		goto(base || '/');
 	}
@@ -185,6 +208,29 @@
 			};
 		}
 	});
+
+	$effect(() => {
+		const currentPath = $page.url.searchParams.get('text');
+		if (!loading && textData && textContainerRef && !scrollRestored) {
+			const savedPos = $appState.readerScrollPosition;
+			const savedPath = $appState.readerScrollPath;
+
+			if (savedPos > 0 && savedPath === currentPath) {
+				// Use a small timeout to ensure the DOM has settled and layout is complete
+				setTimeout(() => {
+					if (textContainerRef) {
+						textContainerRef.scrollTop = savedPos;
+						// Mark as restored after a short delay to ignore initial scroll events
+						setTimeout(() => {
+							scrollRestored = true;
+						}, 50);
+					}
+				}, 50);
+			} else {
+				scrollRestored = true;
+			}
+		}
+	});
 </script>
 
 <svelte:head>
@@ -213,7 +259,7 @@
 		</header>
 
 		<div class="reader-content">
-			<div class="text-container" bind:this={textContainerRef} onclick={handleContainerClick}>
+			<div class="text-container" bind:this={textContainerRef} onclick={handleContainerClick} onscroll={handleScroll}>
 				<TextDisplay
 					{tokens}
 					workType={textData.metadata.work_type}
@@ -234,6 +280,7 @@
 						gloss={selectedLemma ? getGloss(selectedLemma) : null}
 						isCore={selectedLemma ? isCore(selectedLemma) : false}
 						frequency={selectedLemma ? getFrequency(selectedLemma) : null}
+						onviewGlossary={viewInGlossary}
 					/>
 				</div>
 			{:else}
@@ -244,6 +291,7 @@
 							gloss={selectedLemma ? getGloss(selectedLemma) : null}
 							isCore={selectedLemma ? isCore(selectedLemma) : false}
 							frequency={selectedLemma ? getFrequency(selectedLemma) : null}
+							onviewGlossary={viewInGlossary}
 						/>
 					{:else}
 						<p class="placeholder">{t('click_word', $appState.interfaceLang)}</p>
@@ -311,6 +359,8 @@
 	}
 
 	.text-container {
+		scroll-behavior: auto;
+
 		flex: 1;
 		overflow-y: auto;
 	}
