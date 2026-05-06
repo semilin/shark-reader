@@ -30,7 +30,7 @@ CONFIGS: dict[Language, LanguageConfig] = {
         name="Ancient Greek",
         example_word="ἵππος",
         example_response='{"definition": "Ὁ ἵππος ἐστὶ ζῷον μέγα ὃ ἐν τῷ ἀγρῷ τρέχει καὶ τοὺς ἀνθρώπους φέρει.", "examples": ["Ὁ παῖς ἐπὶ τοῦ ἵππου κάθηται.", "Οἱ ἵπποι εἰς τὴν πόλιν τρέχουσιν."], "synonyms": ["κέλης"]}',
-        lemma_instructions="Put in primary principle parts (first person present active singular for verbs, nominative singular for nouns, etc.). Use proper polytonic accentuation. Capitalize proper nouns, but do not capitalize regular words.",
+        lemma_instructions="Put in primary principle parts (first person present active singular for verbs, nominative singular for nouns, etc.). Participles should be counted as their source verb, excepting participle-derived nouns such as ἄρχων. Use proper polytonic accentuation. Capitalize proper nouns, but do not capitalize regular words.",
         word_pattern=r"[\w\u0370-\u03FF\u1F00-\u1FFF]+",
     ),
 }

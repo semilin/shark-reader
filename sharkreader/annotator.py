@@ -94,6 +94,7 @@ def get_annotated_sentence_lemmas(
     prompt = (
         f"Context: {config.name} literature.\n"
         f"Directions: Lemmatize each word in the following list. You MUST provide a lemma for EVERY numbered item. "
+        f"Lemmas never include punctuation. Periods, commas, apostrophes, etc. should be omitted. "
         f"Return a JSON object with a 'lemmas' key containing a list of objects, each with 'w' (the input word) and 'l' (the lemma).\n"
         f"{config.lemma_instructions}\n"
         f"Words to lemmatize:\n{words_input}"
