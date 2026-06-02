@@ -7,11 +7,10 @@
 		workType: WorkType;
 		selectedLemma: string | null;
 		rangeIndices: Set<number>;
-		coreLookup: (lemma: string) => boolean;
 		onWordClick: (index: number, lemma: string, shiftKey: boolean) => void;
 	}
 
-	let { tokens, workType, selectedLemma, rangeIndices, coreLookup, onWordClick }: Props = $props();
+	let { tokens, workType, selectedLemma, rangeIndices, onWordClick }: Props = $props();
 
 	interface LineToken {
 		token: Token;
@@ -87,7 +86,6 @@
 							{index}
 							selected={selectedLemma === token.l && rangeIndices.size === 0}
 							inRange={rangeIndices.has(index!)}
-							isCore={coreLookup(token.l!)}
 							onclick={(i, e) => onWordClick(i, token.l!, e.shiftKey)}
 						/>
 					{:else}

@@ -19,6 +19,12 @@ interface TranslationSet {
 	top_forms: string;
 	appearances_by_text: string;
 	view_in_glossary: string;
+	vocabulary: string;
+	core_vocabulary_label: string;
+	frequent_label: string;
+	medium_label: string;
+	rare_label: string;
+	hapax_label: string;
 }
 
 const translations: Record<InterfaceLang, TranslationSet> = {
@@ -40,7 +46,13 @@ const translations: Record<InterfaceLang, TranslationSet> = {
 		frequency_score: 'Frequency Score',
 		top_forms: 'Top Forms',
 		appearances_by_text: 'Appearances by Text',
-		view_in_glossary: 'View in Glossary'
+		view_in_glossary: 'View in Glossary',
+		vocabulary: 'Vocabulary',
+		core_vocabulary_label: 'Core Vocabulary',
+		frequent_label: 'Frequent',
+		medium_label: 'Medium Frequency',
+		rare_label: 'Rare',
+		hapax_label: 'Hapax Legomena (appears once)'
 	},
 	latin: {
 		library_title: 'Bibliothēca',
@@ -60,7 +72,13 @@ const translations: Record<InterfaceLang, TranslationSet> = {
 		frequency_score: 'Gradus Frequentiae',
 		top_forms: 'Formae Frequentissimae',
 		appearances_by_text: 'Appāritiōnēs per Textum',
-		view_in_glossary: 'In Glossāriō Vidēre'
+		view_in_glossary: 'In Glossāriō Vidēre',
+		vocabulary: 'Vocābula',
+		core_vocabulary_label: 'Vocābulārium Commūne',
+		frequent_label: 'Crēbra',
+		medium_label: 'Mediā Frēquentiā',
+		rare_label: 'Rāra',
+		hapax_label: 'Hapax Legomena (semel appāret)'
 	},
 	greek: {
 		library_title: 'Βιβλιοθήκη',
@@ -80,7 +98,13 @@ const translations: Record<InterfaceLang, TranslationSet> = {
 		frequency_score: 'Βαθμὸς Συχνότητος',
 		top_forms: 'Κυριώτατοι τύποι',
 		appearances_by_text: 'Ἐμφανίσεις κατὰ σύγγραμμα',
-		view_in_glossary: 'Ἐν τῷ γλωσσαρίῳ ὁρᾶν'
+		view_in_glossary: 'Ἐν τῷ γλωσσαρίῳ ὁρᾶν',
+		vocabulary: 'Λεξιλόγιον',
+		core_vocabulary_label: 'Κοινὸν Λεξιλόγιον',
+		frequent_label: 'Συχνά',
+		medium_label: 'Μέση Συχνότης',
+		rare_label: 'Σπάνια',
+		hapax_label: 'Ἅπαξ Λεγόμενα (ἅπαξ φαίνεται)'
 	}
 };
 

@@ -1,15 +1,34 @@
 let latinCore: Set<string> | null = null;
 let greekCore: Set<string> | null = null;
 
+function stripMacrons(word: string): string {
+	return word.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+function expandHeadword(raw: string): string[] {
+	const words = raw.split(/[\s,;–—/]+/).filter(Boolean);
+	const result: string[] = [];
+	for (const w of words) {
+		const lower = w.toLowerCase();
+		result.push(lower);
+		const stripped = stripMacrons(lower);
+		if (stripped !== lower) {
+			result.push(stripped);
+		}
+	}
+	return result;
+}
+
 function parseCSV(content: string): Set<string> {
 	const lines = content.trim().split('\n');
 	const core = new Set<string>();
 	for (let i = 1; i < lines.length; i++) {
 		const line = lines[i];
 		const match = line.match(/^"([^"]+)"/);
-		if (match) {
-			const headword = match[1].toLowerCase();
-			core.add(headword);
+		const headword = match ? match[1] : line.split(',')[0];
+		const expanded = expandHeadword(headword);
+		for (const w of expanded) {
+			core.add(w);
 		}
 	}
 	return core;

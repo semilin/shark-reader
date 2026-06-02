@@ -55,9 +55,9 @@
 			tokens = data.tokens;
 			frequencies = computeLemmaFrequencies(data.tokens);
 			
-			dictionary = await getDictionary(data.metadata.language);
+dictionary = await getDictionary(data.metadata.language);
 			coreSet = await getCoreList(data.metadata.language);
-			
+
 			loading = false;
 
 		} catch (e) {
@@ -145,12 +145,12 @@
 		return dictionary.get(lemma) ?? null;
 	}
 
-	function isCore(lemma: string): boolean {
-		return coreSet.has(lemma.toLowerCase());
-	}
-
 	function getFrequency(lemma: string): number | null {
 		return frequencies.get(lemma) ?? null;
+	}
+
+	function isCore(lemma: string): boolean {
+		return coreSet.has(lemma.toLowerCase());
 	}
 
 	function handleScroll() {
@@ -265,7 +265,6 @@
 					workType={textData.metadata.work_type}
 					{selectedLemma}
 					{rangeIndices}
-					coreLookup={isCore}
 					onWordClick={handleWordClick}
 				/>
 			</div>

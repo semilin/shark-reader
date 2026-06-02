@@ -6,11 +6,10 @@
 		index?: number;
 		selected?: boolean;
 		inRange?: boolean;
-		isCore?: boolean;
 		onclick?: (index: number, event: MouseEvent) => void;
 	}
 
-	let { token, index = 0, selected = false, inRange = false, isCore = false, onclick }: Props = $props();
+	let { token, index = 0, selected = false, inRange = false, onclick }: Props = $props();
 </script>
 
 {#if token.t === 'w'}
@@ -18,7 +17,7 @@
 		class="word {selected ? 'word-selected' : ''} {inRange ? 'word-in-range' : ''}"
 		onclick={(e) => onclick?.(index, e)}
 	>
-		{token.w}{#if isCore}<span class="core-star"> ★</span>{/if}
+		{token.w}
 	</button>
 {:else if token.t === 'p'}
 	<span class="punctuation">{token.w}</span>
@@ -57,15 +56,6 @@
 
 	.word-in-range.word-selected {
 		border-color: var(--color-text);
-	}
-
-	.core-star {
-		color: var(--color-primary);
-		font-size: 0.875rem;
-	}
-
-	.word-in-range .core-star {
-		color: var(--color-bg);
 	}
 
 	.punctuation {
