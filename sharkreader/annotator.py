@@ -3,9 +3,11 @@
 import json
 import logging
 import re
+import time
 from typing import Any
 
 from sharkreader.config import ANNOTATION_MODEL, LanguageConfig
+from sharkreader.ratelimit import RateLimitCoordinator
 from sharkreader.tokenizer import get_word_pattern
 
 logger = logging.getLogger(__name__)
@@ -17,22 +19,58 @@ class AnnotationError(Exception):
     pass
 
 
-def query_llm(prompt: str, model: str, client: Any) -> dict[str, Any]:
+def query_llm(
+    prompt: str,
+    model: str,
+    client: Any,
+    max_attempts: int = 3,
+    rate_limiter: RateLimitCoordinator | None = None,
+) -> dict[str, Any]:
     """Query the LLM with retry logic."""
     from openai import BadRequestError, RateLimitError
 
-    response = client.chat.completions.create(
-        model=model,
-        messages=[{"role": "user", "content": prompt}],
-        response_format={"type": "json_object"},
-    )
-    content = response.choices[0].message.content
+    last_error: Exception | None = None
 
-    try:
-        return json.loads(content)
-    except json.JSONDecodeError as e:
-        logger.error(f"Failed to parse LLM response as JSON: {e}")
-        raise AnnotationError(f"Invalid JSON response from LLM") from e
+    for attempt in range(max_attempts):
+        try:
+            if rate_limiter is not None:
+                rate_limiter.acquire()
+
+            response = client.chat.completions.create(
+                model=model,
+                messages=[{"role": "user", "content": prompt}],
+                response_format={"type": "json_object"},
+            )
+            content = response.choices[0].message.content
+
+            result = json.loads(content)
+            if rate_limiter is not None:
+                rate_limiter.report_success()
+            return result
+
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse LLM response as JSON: {e}")
+            raise AnnotationError(f"Invalid JSON response from LLM") from e
+
+        except RateLimitError as e:
+            logger.warning(f"Attempt {attempt + 1}: Rate limited, retrying...")
+            last_error = e
+            if rate_limiter is not None:
+                rate_limiter.report_rate_limit()
+            if attempt < max_attempts - 1:
+                time.sleep(2**attempt)
+                continue
+
+        except Exception as e:
+            logger.warning(f"Attempt {attempt + 1}: Error {type(e).__name__}: {e}")
+            last_error = e
+            if attempt < max_attempts - 1:
+                time.sleep(2**attempt)
+                continue
+
+    raise AnnotationError(
+        f"Failed after {max_attempts} attempts: {last_error}"
+    ) from last_error
 
 
 def validate_lemma_response(response: Any, expected_count: int) -> list[dict[str, str]]:
@@ -76,6 +114,7 @@ def get_annotated_sentence_lemmas(
     config: LanguageConfig,
     client: Any,
     word_pattern: re.Pattern,
+    rate_limiter: RateLimitCoordinator | None = None,
 ) -> list[dict[str, str]]:
     """Sends a discrete list of words to the LLM for lemmatization."""
     if not words_list:
@@ -101,7 +140,7 @@ def get_annotated_sentence_lemmas(
     )
 
     try:
-        res = query_llm(prompt, ANNOTATION_MODEL, client)
+        res = query_llm(prompt, ANNOTATION_MODEL, client, rate_limiter=rate_limiter)
         lemmas = validate_lemma_response(res, len(clean_words))
 
         # Handle count mismatch with positional fallback

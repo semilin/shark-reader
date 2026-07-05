@@ -14,10 +14,13 @@
 
 {#if token.t === 'w'}
 	<button
-		class="word {selected ? 'word-selected' : ''} {inRange ? 'word-in-range' : ''}"
+		class="word {selected ? 'word-selected' : ''} {inRange ? 'word-in-range' : ''} {token.s ? 'word-has-substitute' : ''}"
 		onclick={(e) => onclick?.(index, e)}
 	>
 		{token.w}
+		{#if token.s}
+			<span class="substitute-tooltip">{token.s}</span>
+		{/if}
 	</button>
 {:else if token.t === 'p'}
 	<span class="punctuation">{token.w}</span>
@@ -44,6 +47,61 @@
 		background-color: var(--color-surface);
 	}
 
+
+	.word-has-substitute {
+		position: relative;
+	}
+
+	.substitute-tooltip {
+		position: absolute;
+		bottom: calc(100% + 4px);
+		left: 50%;
+		transform: translateX(-50%);
+		background-color: var(--color-primary);
+		color: var(--color-bg);
+		font-size: 0.75rem;
+		padding: 2px 8px;
+		border-radius: var(--radius-sm);
+		white-space: nowrap;
+		pointer-events: none;
+		opacity: 0;
+		visibility: hidden;
+		transition: opacity var(--transition-fast), visibility var(--transition-fast);
+		z-index: 10;
+	}
+
+	.substitute-tooltip::after {
+		content: '';
+		position: absolute;
+		top: 100%;
+		left: 50%;
+		transform: translateX(-50%);
+		border-width: 4px;
+		border-style: solid;
+		border-color: var(--color-primary) transparent transparent transparent;
+	}
+
+	.word-has-substitute:hover .substitute-tooltip {
+		opacity: 1;
+		visibility: visible;
+	}
+
+	.word-selected .substitute-tooltip {
+		background-color: var(--color-primary-dark);
+	}
+
+	.word-selected .substitute-tooltip::after {
+		border-top-color: var(--color-primary-dark);
+	}
+
+	.word-in-range .substitute-tooltip {
+		background-color: var(--color-bg);
+		color: var(--color-primary);
+	}
+
+	.word-in-range .substitute-tooltip::after {
+		border-top-color: var(--color-bg);
+	}
 	.word-selected {
 		background-color: var(--color-bg);
 		border-color: var(--color-primary);

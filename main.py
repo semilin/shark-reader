@@ -10,6 +10,7 @@ from openai import OpenAI
 
 from sharkreader import annotator, config, glossgen, tokenizer
 from sharkreader.config import CONFIGS, DEFAULT_MAX_WORKERS
+from sharkreader.ratelimit import RateLimitCoordinator
 
 logging.basicConfig(
     level=logging.INFO,
@@ -56,6 +57,8 @@ def cmd_annotate(args):
         f"Annotating {len(sentences_to_annotate)} sentences with {len(sum(sentences_to_annotate, []))} words..."
     )
 
+    rate_limiter = RateLimitCoordinator()
+
     results = [None] * len(sentences_to_annotate)
     with concurrent.futures.ThreadPoolExecutor(
         max_workers=DEFAULT_MAX_WORKERS
@@ -70,6 +73,7 @@ def cmd_annotate(args):
                     lang_config,
                     client,
                     word_pattern,
+                    rate_limiter,
                 )
                 future_to_idx[future] = idx
 
@@ -353,6 +357,7 @@ def cmd_gloss(args):
                 logger.warning(f"Could not parse {dict_path}, starting fresh")
 
     encountered_lemmas = set()
+    tokens = []
     if args.input_json:
         with open(args.input_json, "r", encoding="utf-8") as f:
             data = json.load(f)
@@ -362,58 +367,170 @@ def cmd_gloss(args):
                     encountered_lemmas.add(t["l"])
     elif args.word:
         encountered_lemmas.add(args.word)
-    else:
+    elif not args.substitute:
         print("Error: Must provide either --input-json or --word")
         return
 
+    # --- Dictionary gloss generation (existing logic) ---
     missing_lemmas = sorted(
         [l for l in encountered_lemmas if l and l not in dictionary]
     )
 
-    print(f"Expanding dictionary ({len(missing_lemmas)} new lemmas)...")
+    if missing_lemmas:
+        print(f"Expanding dictionary ({len(missing_lemmas)} new lemmas)...")
 
-    if not missing_lemmas:
+        results = {}
+
+        # Timeout for each gloss generation task
+        TASK_TIMEOUT = 90  # seconds
+
+        rate_limiter = RateLimitCoordinator()
+
+        # Process in smaller batches to avoid hanging
+        batch_size = DEFAULT_MAX_WORKERS
+        for i in range(0, len(missing_lemmas), batch_size):
+            batch = missing_lemmas[i : i + batch_size]
+
+            with concurrent.futures.ThreadPoolExecutor(
+                max_workers=len(batch)
+            ) as executor:
+                future_to_lemma = {
+                    executor.submit(
+                        glossgen.generate_gloss,
+                        lemma,
+                        lang_config,
+                        vocab_list,
+                        client,
+                        rate_limiter,
+                    ): lemma
+                    for lemma in batch
+                }
+
+                for future in concurrent.futures.as_completed(future_to_lemma):
+                    lemma = future_to_lemma[future]
+                    try:
+                        gloss = future.result(timeout=TASK_TIMEOUT)
+                        results[lemma] = gloss
+                    except concurrent.futures.TimeoutError:
+                        print(
+                            f"    Timeout generating gloss for '{lemma}'. Skipping..."
+                        )
+                    except glossgen.GlossGenerationError as e:
+                        print(
+                            f"    Error generating gloss for '{lemma}': {e}. Skipping..."
+                        )
+                    except Exception as e:
+                        print(f"    Unexpected error for '{lemma}': {e}. Skipping...")
+
+            completed = min(i + batch_size, len(missing_lemmas))
+            print(f"  Completed {completed}/{len(missing_lemmas)} glosses...")
+
+        # Save dictionary once with all results
+        dictionary.update(results)
+        with open(dict_path, "w", encoding="utf-8") as f:
+            json.dump(dictionary, f, ensure_ascii=False, indent=2)
+        print(
+            f"Done! Dictionary '{dict_path}' updated with {len(results)} new entries."
+        )
+    else:
         print("No new lemmas to add.")
-        return
 
-    results = {}
+    # --- Substitute gloss generation (new feature) ---
+    if args.substitute:
+        if not args.input_json:
+            print("Error: --substitute requires --input-json")
+            return
 
-    # Timeout for each gloss generation task
-    TASK_TIMEOUT = 90  # seconds
+        print(f"Generating substitute glosses for non-core words...")
 
-    # Process in smaller batches to avoid hanging
-    batch_size = DEFAULT_MAX_WORKERS
-    for i in range(0, len(missing_lemmas), batch_size):
-        batch = missing_lemmas[i : i + batch_size]
+        # Collect word tokens that need substitute consideration
+        word_tokens = []
+        for i, t in enumerate(tokens):
+            if t["t"] == "w" and t.get("l"):
+                lemma = t["l"]
+                # Quick pre-filter: skip core vocab and proper nouns
+                if lemma.lower() in vocab_list:
+                    continue
+                if t["w"] and t["w"][0].isupper():
+                    continue
+                word_tokens.append((i, t))
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=len(batch)) as executor:
-            future_to_lemma = {
-                executor.submit(
-                    glossgen.generate_gloss, lemma, lang_config, vocab_list, client
-                ): lemma
-                for lemma in batch
-            }
+        print(f"  Considering {len(word_tokens)} words for substitution...")
 
-            for future in concurrent.futures.as_completed(future_to_lemma):
-                lemma = future_to_lemma[future]
-                try:
-                    gloss = future.result(timeout=TASK_TIMEOUT)
-                    results[lemma] = gloss
-                except concurrent.futures.TimeoutError:
-                    print(f"    Timeout generating gloss for '{lemma}'. Skipping...")
-                except glossgen.GlossGenerationError as e:
-                    print(f"    Error generating gloss for '{lemma}': {e}. Skipping...")
-                except Exception as e:
-                    print(f"    Unexpected error for '{lemma}': {e}. Skipping...")
+        if word_tokens:
+            # Build context windows for each word (nearby tokens)
+            def get_context(token_idx: int, tokens: list, window: int = 5) -> str:
+                """Get a short context string around the word at token_idx."""
+                start = max(0, token_idx - window)
+                end = min(len(tokens), token_idx + window + 1)
+                context_parts = []
+                for j in range(start, end):
+                    t = tokens[j]
+                    if t["t"] == "w":
+                        context_parts.append(t["w"])
+                    elif t["t"] == "p":
+                        context_parts.append(t["w"])
+                return " ".join(context_parts)
 
-        completed = min(i + batch_size, len(missing_lemmas))
-        print(f"  Completed {completed}/{len(missing_lemmas)} glosses...")
+            substitute_results = [None] * len(word_tokens)
 
-    # Save dictionary once with all results
-    dictionary.update(results)
-    with open(dict_path, "w", encoding="utf-8") as f:
-        json.dump(dictionary, f, ensure_ascii=False, indent=2)
-    print(f"Done! Dictionary '{dict_path}' updated with {len(results)} new entries.")
+            substitute_rate_limiter = RateLimitCoordinator()
+
+            with concurrent.futures.ThreadPoolExecutor(
+                max_workers=DEFAULT_MAX_WORKERS
+            ) as executor:
+                future_to_idx = {}
+                for idx, (token_idx, t) in enumerate(word_tokens):
+                    context = get_context(token_idx, tokens)
+                    future = executor.submit(
+                        glossgen.generate_substitute_gloss,
+                        t["w"],
+                        t["l"],
+                        context,
+                        lang_config,
+                        vocab_list,
+                        client,
+                        substitute_rate_limiter,
+                    )
+                    future_to_idx[future] = idx
+
+                completed = 0
+                for future in concurrent.futures.as_completed(future_to_idx):
+                    idx = future_to_idx[future]
+                    try:
+                        substitute = future.result()
+                        substitute_results[idx] = substitute
+                    except Exception as e:
+                        logger.warning(
+                            f"Error generating substitute for token {idx}: {e}"
+                        )
+                    completed += 1
+                    if completed % 50 == 0 or completed == len(future_to_idx):
+                        print(
+                            f"  Substitutes completed {completed}/{len(future_to_idx)}..."
+                        )
+
+            # Apply substitutes to tokens
+            substitute_count = 0
+            for idx, (token_idx, t) in enumerate(word_tokens):
+                sub = substitute_results[idx]
+                if sub:
+                    t["s"] = sub
+                    substitute_count += 1
+
+            # Save updated JSON
+            with open(args.input_json, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+
+            print(
+                f"Done! Added {substitute_count} substitute glosses to {args.input_json}"
+            )
+        else:
+            print("No words to consider for substitution.")
+
+            # Still save to avoid stale file state
+            with open(args.input_json, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
 
 
 def main():
@@ -439,6 +556,12 @@ def main():
     )
     parser_gloss.add_argument("--word", help="Single word to generate gloss for")
     parser_gloss.add_argument("--dict", help="Dictionary file to update")
+    parser_gloss.add_argument(
+        "--substitute",
+        "-s",
+        action="store_true",
+        help="Generate minimal substitute glosses (simpler words) for non-core vocabulary in the input JSON",
+    )
     parser_gloss.set_defaults(func=cmd_gloss)
 
     parser_repair = subparsers.add_parser(

@@ -39,8 +39,14 @@ CONFIGS: dict[Language, LanguageConfig] = {
 # Models
 ANNOTATION_MODEL = "google/gemini-3.1-flash-lite-preview"
 GLOSS_MODEL = "google/gemini-3-flash-preview"
+SUBSTITUTE_MODEL = ANNOTATION_MODEL
 
 # API Configuration
 DEFAULT_MAX_WORKERS = 50
 DEFAULT_RETRY_ATTEMPTS = 3
 DEFAULT_RETRY_BASE_DELAY = 1.0  # seconds
+
+# Rate limiting
+DEFAULT_REQUESTS_PER_SECOND = 15.0
+DEFAULT_INITIAL_BACKOFF = 2.0  # seconds
+DEFAULT_MAX_BACKOFF = 120.0  # seconds

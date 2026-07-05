@@ -9,8 +9,10 @@ from sharkreader.config import (
     DEFAULT_RETRY_ATTEMPTS,
     DEFAULT_RETRY_BASE_DELAY,
     GLOSS_MODEL,
+    SUBSTITUTE_MODEL,
     LanguageConfig,
 )
+from sharkreader.ratelimit import RateLimitCoordinator
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +38,7 @@ def query_llm_with_retry(
     client: Any,
     max_attempts: int = DEFAULT_RETRY_ATTEMPTS,
     base_delay: float = DEFAULT_RETRY_BASE_DELAY,
+    rate_limiter: RateLimitCoordinator | None = None,
 ) -> dict[str, Any]:
     """Query the LLM with exponential backoff retry logic."""
     from openai import BadRequestError, RateLimitError
@@ -44,6 +47,9 @@ def query_llm_with_retry(
 
     for attempt in range(max_attempts):
         try:
+            if rate_limiter is not None:
+                rate_limiter.acquire()
+
             response = client.chat.completions.create(
                 model=model,
                 messages=[{"role": "user", "content": prompt}],
@@ -53,7 +59,10 @@ def query_llm_with_retry(
             content = response.choices[0].message.content
 
             try:
-                return json.loads(content)
+                result = json.loads(content)
+                if rate_limiter is not None:
+                    rate_limiter.report_success()
+                return result
             except json.JSONDecodeError as e:
                 logger.warning(
                     f"Attempt {attempt + 1}: Invalid JSON response, retrying..."
@@ -69,9 +78,9 @@ def query_llm_with_retry(
         except RateLimitError as e:
             logger.warning(f"Attempt {attempt + 1}: Rate limited, retrying...")
             last_error = e
+            if rate_limiter is not None:
+                rate_limiter.report_rate_limit()
             if attempt < max_attempts - 1:
-                delay = base_delay * (2**attempt)
-                time.sleep(delay)
                 continue
 
         except Exception as e:
@@ -115,7 +124,9 @@ def validate_gloss_response(response: Any) -> dict[str, Any]:
     return {
         "definition": str(response["definition"]),
         "examples": [str(ex) for ex in response["examples"]],
-        "synonyms": [str(syn) for syn in response["synonyms"]] if "synonyms" in response else []
+        "synonyms": [str(syn) for syn in response["synonyms"]]
+        if "synonyms" in response
+        else [],
     }
 
 
@@ -124,6 +135,7 @@ def generate_gloss(
     config: LanguageConfig,
     vocab_list: list[str],
     client: Any,
+    rate_limiter: RateLimitCoordinator | None = None,
 ) -> dict[str, Any]:
     """Generate an immersive gloss for a word using core vocabulary."""
     vocab_str = "\n".join(vocab_list)
@@ -139,5 +151,66 @@ def generate_gloss(
         f"The word is: {word}."
     )
 
-    response = query_llm_with_retry(prompt, GLOSS_MODEL, client)
+    response = query_llm_with_retry(
+        prompt, GLOSS_MODEL, client, rate_limiter=rate_limiter
+    )
     return validate_gloss_response(response)
+
+
+def generate_substitute_gloss(
+    word: str,
+    lemma: str,
+    context: str,
+    config: LanguageConfig,
+    vocab_list: list[str],
+    client: Any,
+    rate_limiter: RateLimitCoordinator | None = None,
+) -> str | None:
+    """
+    Generate a minimal substitute gloss: a simpler word or short phrase (<=3 words)
+    that can replace the given word in context, preserving grammatical parsing.
+
+    Skips core vocabulary words and proper nouns. Returns None if no suitable
+    substitute exists or the word is too nuanced for a simple substitution.
+    """
+    # Skip core vocabulary words (already common)
+    if lemma.lower() in vocab_list:
+        return None
+
+    # Skip proper nouns (capitalized in Latin or Greek)
+    if word and word[0].isupper():
+        return None
+
+    vocab_str = "\n".join(vocab_list)
+
+    prompt = (
+        f"# CORE VOCABULARY\n{vocab_str}\n"
+        f"# DIRECTIONS\n"
+        f"You are given a word in {config.name} that appears in a specific context. "
+        f"Determine whether this word can be replaced by a SIMPLER {config.name} word or short phrase (no more than 3 words) "
+        f"that preserves the same grammatical parsing (same person, number, tense, mood, voice, case, etc.).\n\n"
+        f"RULES:\n"
+        f"1. The substitute MUST be simpler and more common than the original word.\n"
+        f"2. The substitute MUST preserve the exact same grammatical parsing.\n"
+        f"3. The substitute must be 3 words or fewer.\n"
+        f"4. Example: \u1f24\u03bd\u03b4\u03b1\u03bd\u03b5 (imperfect active indicative 3sg of \u1f01\u03bd\u03b4\u03ac\u03bd\u03c9) could become \u1f24\u03c1\u03b5\u03c3\u03ba\u03b5 (imperfect active indicative 3sg of \u1f00\u03c1\u03ad\u03c3\u03ba\u03c9).\n"
+        f"5. If the word is already common, return null.\n"
+        f"6. If the meaning is too nuanced to capture in 3 words or fewer, return null.\n"
+        f"7. If no suitable substitute exists, return null.\n\n"
+        f"WORD: {word}\n"
+        f"LEMMA: {lemma}\n"
+        f"CONTEXT: {context}\n\n"
+        f'Respond with JSON: {{ "substitute": string | null }}'
+    )
+
+    try:
+        response = query_llm_with_retry(
+            prompt, SUBSTITUTE_MODEL, client, rate_limiter=rate_limiter
+        )
+        substitute = response.get("substitute")
+        if substitute and isinstance(substitute, str) and len(substitute.split()) <= 3:
+            return substitute
+        return None
+    except GlossGenerationError:
+        logger.warning(f"Failed to generate substitute for '{word}' (lemma: {lemma})")
+        return None
