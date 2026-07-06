@@ -99,3 +99,35 @@ def tokenize_rich(text: str) -> list[Token]:
 def get_word_pattern(config_word_pattern: str) -> re.Pattern:
     """Compile regex pattern for extracting words from a config."""
     return re.compile(f"[^{config_word_pattern}]+")
+
+
+def is_sentence_end(token: dict, sentence_end_chars: str = ".?;·") -> bool:
+    """Check if a token ends a sentence."""
+    word = token.get("w", "")
+    if token["t"] == "p":
+        return any(c in word for c in sentence_end_chars)
+    if token["t"] == "w":
+        return any(word.endswith(c) for c in sentence_end_chars)
+    return False
+
+
+def chunk_sentences(
+    tokens: list[dict], sentence_end_chars: str = ".?;·"
+) -> list[list[int]]:
+    """Chunk tokens into sentences based on punctuation.
+
+    Returns a list of sentences, each a list of token indices into `tokens`.
+    """
+    sentences: list[list[int]] = []
+    current: list[int] = []
+
+    for i, token in enumerate(tokens):
+        current.append(i)
+        if is_sentence_end(token, sentence_end_chars):
+            sentences.append(current)
+            current = []
+
+    if current:
+        sentences.append(current)
+
+    return sentences

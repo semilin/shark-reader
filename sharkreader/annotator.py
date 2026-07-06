@@ -166,32 +166,6 @@ def get_annotated_sentence_lemmas(
         return [{"w": w, "l": w.lower()} for w in clean_words]
 
 
-def is_sentence_end(token: dict, sentence_end_chars: str = ".?;·") -> bool:
-    """Check if a token ends a sentence."""
-    word = token.get("w", "")
-    # Check standalone punctuation tokens
-    if token["t"] == "p":
-        return any(c in word for c in sentence_end_chars)
-    # Check punctuation at end of word tokens
-    if token["t"] == "w":
-        return any(word.endswith(c) for c in sentence_end_chars)
-    return False
-
-
-def chunk_sentences(
-    tokens: list[dict], sentence_end_chars: str = ".?;·"
-) -> list[list[int]]:
-    """Chunk tokens into sentences based on punctuation."""
-    sentences: list[list[int]] = []
-    current_sentence_indices: list[int] = []
-
-    for i, token in enumerate(tokens):
-        current_sentence_indices.append(i)
-        if is_sentence_end(token, sentence_end_chars):
-            sentences.append(current_sentence_indices)
-            current_sentence_indices = []
-
-    if current_sentence_indices:
-        sentences.append(current_sentence_indices)
-
-    return sentences
+# Sentence chunking is provided by the tokenizer module. These imports
+# keep the legacy public API (`annotator.chunk_sentences`) working.
+from sharkreader.tokenizer import chunk_sentences, is_sentence_end  # noqa: E402,F401

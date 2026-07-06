@@ -50,3 +50,23 @@ DEFAULT_RETRY_BASE_DELAY = 1.0  # seconds
 DEFAULT_REQUESTS_PER_SECOND = 15.0
 DEFAULT_INITIAL_BACKOFF = 2.0  # seconds
 DEFAULT_MAX_BACKOFF = 120.0  # seconds
+
+
+# ---------------------------------------------------------------------------
+# v2 pipeline configuration
+# ---------------------------------------------------------------------------
+# One model role per phase. Defaults reuse the legacy model aliases; override
+# via these constants when promoting a higher-quality model for a phase.
+V2_LEMMA_MODEL = ANNOTATION_MODEL
+V2_GLOSS_MODEL = GLOSS_MODEL
+V2_SUBSTITUTE_MODEL = SUBSTITUTE_MODEL
+
+# Batch sizes (per phase) and window sizes.
+V2_LEMMA_BATCH_SIZE = 50        # sentences per lemmatization request
+V2_GLOSS_BATCH_SIZE = 20        # lemmas per gloss request
+V2_SUBSTITUTE_BATCH_SIZE = 25   # (lemma, surface, context) triples per request
+V2_SUBSTITUTE_CONTEXT_WINDOW = 9  # +/- token window around the word
+
+# API behaviour
+V2_API_TIMEOUT = 120.0          # seconds
+V2_INSTANCE_CACHE_SUFFIX = ".substitutes.cache.json"
